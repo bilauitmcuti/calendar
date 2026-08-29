@@ -109,18 +109,6 @@ export default function McpPage() {
             <figure className="flex flex-col items-center gap-2">
               <Image
                 src="/image/claude-enable-connector.webp"
-                alt="Enabling the Bila UiTM Cuti connector in a Claude conversation"
-                width={1280}
-                height={720}
-                className="h-auto w-full rounded-lg ring-1 ring-border"
-              />
-              <span className="text-center text-xs text-muted-foreground">
-                Enable the connector for your conversation.
-              </span>
-            </figure>
-            <figure className="flex flex-col items-center gap-2">
-              <Image
-                src="/image/claude-add-custom-connector.webp"
                 alt="Adding the Bila UiTM Cuti custom connector in Claude"
                 width={1280}
                 height={720}
@@ -128,6 +116,18 @@ export default function McpPage() {
               />
               <span className="text-center text-xs text-muted-foreground">
                 Add the custom connector and paste the MCP URL.
+              </span>
+            </figure>
+            <figure className="flex flex-col items-center gap-2">
+              <Image
+                src="/image/claude-add-custom-connector.webp"
+                alt="Enabling the Bila UiTM Cuti custom connector in a Claude conversation"
+                width={1280}
+                height={720}
+                className="h-auto w-full rounded-lg ring-1 ring-border"
+              />
+              <span className="text-center text-xs text-muted-foreground">
+                Enable the connector for your conversation.
               </span>
             </figure>
           </div>
