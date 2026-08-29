@@ -132,6 +132,29 @@ export default function McpPage() {
             </figure>
           </div>
 
+          <h2>Try it on Grok Bot</h2>
+          <p>
+            Want an instant assistant already set up? Add the <BrandName /> bot on Grok to get answers about lectures, cuti, exams, registration, and public holidays—no connector setup needed.
+            <br />
+            <br />
+            <strong>Note:</strong> A paid subscription is required to use the Grok bot.
+          </p>
+          <div className="not-typeset mt-[var(--typeset-flow)]">
+            <Button
+              render={
+                <a
+                  href="https://x.ai/bot/NdfYE7nsqkzFLbgVmWx1U"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                />
+              }
+              nativeButton={false}
+              className="h-[38px] w-fit"
+            >
+              Add to Grok Bot
+            </Button>
+          </div>
+
           <h2>Need more help?</h2>
           <p>Watch the step-by-step video tutorial for adding the connector in Claude.</p>
           <div className="not-typeset mt-[var(--typeset-flow)]">
