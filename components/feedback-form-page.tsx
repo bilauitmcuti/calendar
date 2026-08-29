@@ -445,19 +445,24 @@ export function FeedbackFormPage({
                       className="hidden"
                       onChange={handleAttachmentPick}
                     />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      disabled={isSubmitting || attachments.length >= MAX_ATTACHMENTS}
-                      onClick={() => fileInputRef.current?.click()}
-                      className="h-[38px] w-fit"
-                    >
-                      <HugeiconsIcon icon={ImageAdd01Icon} strokeWidth={2} data-icon="inline-start" />
-                      Add image
-                      <span className="font-normal text-muted-foreground">
-                        ({attachments.length}/{MAX_ATTACHMENTS})
-                      </span>
-                    </Button>
+                    <div className="flex flex-col gap-1.5">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        disabled={isSubmitting || attachments.length >= MAX_ATTACHMENTS}
+                        onClick={() => fileInputRef.current?.click()}
+                        className="h-[38px] w-fit"
+                      >
+                        <HugeiconsIcon icon={ImageAdd01Icon} strokeWidth={2} data-icon="inline-start" />
+                        Add image
+                        <span className="font-normal text-muted-foreground">
+                          ({attachments.length}/{MAX_ATTACHMENTS})
+                        </span>
+                      </Button>
+                      <p className="text-xs text-muted-foreground">
+                        Images are optional. You can submit feedback without attaching any.
+                      </p>
+                    </div>
 
                     {attachments.length > 0 ? (
                       <AttachmentGroup>

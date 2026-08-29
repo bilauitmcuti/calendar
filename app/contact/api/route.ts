@@ -77,11 +77,15 @@ function sanitizeAttachmentFilename(name: string, index: number, contentType: st
 }
 
 function parseAttachmentFiles(formData: FormData): { success: true; files: File[] } | { success: false } {
-  const files = formData.getAll("files").filter(isFileLike);
+  // Empty / zero-byte entries are ignored so feedback can be sent with no image.
+  const files = formData
+    .getAll("files")
+    .filter(isFileLike)
+    .filter((file) => file.size > 0 && (file.name?.length ?? 0) > 0);
   if (files.length > MAX_ATTACHMENT_COUNT) return { success: false };
   for (const file of files) {
     if (!ALLOWED_ATTACHMENT_TYPES.has(file.type)) return { success: false };
-    if (file.size <= 0 || file.size > MAX_ATTACHMENT_BYTES) return { success: false };
+    if (file.size > MAX_ATTACHMENT_BYTES) return { success: false };
   }
   return { success: true, files };
 }
