@@ -109,18 +109,6 @@ export default function McpPage() {
             <figure className="flex flex-col items-center gap-2">
               <Image
                 src="/image/claude-enable-connector.webp"
-                alt="Enabling the Bila UiTM Cuti connector in a Claude conversation"
-                width={1280}
-                height={720}
-                className="h-auto w-full rounded-lg ring-1 ring-border"
-              />
-              <span className="text-center text-xs text-muted-foreground">
-                Enable the connector for your conversation.
-              </span>
-            </figure>
-            <figure className="flex flex-col items-center gap-2">
-              <Image
-                src="/image/claude-add-custom-connector.webp"
                 alt="Adding the Bila UiTM Cuti custom connector in Claude"
                 width={1280}
                 height={720}
@@ -130,6 +118,41 @@ export default function McpPage() {
                 Add the custom connector and paste the MCP URL.
               </span>
             </figure>
+            <figure className="flex flex-col items-center gap-2">
+              <Image
+                src="/image/claude-add-custom-connector.webp"
+                alt="Enabling the Bila UiTM Cuti custom connector in a Claude conversation"
+                width={1280}
+                height={720}
+                className="h-auto w-full rounded-lg ring-1 ring-border"
+              />
+              <span className="text-center text-xs text-muted-foreground">
+                Enable the connector for your conversation.
+              </span>
+            </figure>
+          </div>
+
+          <h2>Try it on Grok Bot</h2>
+          <p>
+            Want an instant assistant already set up? Add the <BrandName /> bot on Grok to get answers about lectures, cuti, exams, registration, and public holidays—no connector setup needed.
+            <br />
+            <br />
+            <strong>Note:</strong> A paid subscription is required to use the Grok bot.
+          </p>
+          <div className="not-typeset mt-[var(--typeset-flow)]">
+            <Button
+              render={
+                <a
+                  href="https://x.ai/bot/NdfYE7nsqkzFLbgVmWx1U"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                />
+              }
+              nativeButton={false}
+              className="h-[38px] w-fit"
+            >
+              Add to Grok Bot
+            </Button>
           </div>
 
           <h2>Need more help?</h2>

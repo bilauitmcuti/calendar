@@ -231,7 +231,7 @@ const queryExamples: { url: string; meaning: string }[] = [
       'Same session, with only Lecture and Examination on; then redirects to the clean Diploma path.',
   },
   {
-    url: '/?B-20264&B-20262&break&states',
+    url: '/?B-20264&B-20272&break&states',
     meaning:
       'Applies two sessions plus Break and Kedah/Kelantan/Terengganu holidays, then cleans the URL.',
   },
