@@ -43,25 +43,29 @@ const CATEGORY_SET = new Set<string>(CONTACT_CATEGORY_OPTIONS);
 function parseContactRequest(raw: unknown): { success: true; data: ContactRequest } | { success: false } {
   if (!raw || typeof raw !== "object") return { success: false };
   const o = raw as Record<string, unknown>;
-  const who = String(o.who ?? "");
-  const category = String(o.category ?? "");
+  const whoRaw = String(o.who ?? "");
+  const categoryRaw = String(o.category ?? "");
   const message = String(o.message ?? "");
   const startedAt = Number(o.startedAt);
+  const parsedRatingRaw = o.rating != null ? Number(o.rating) : 0;
+  const rating =
+    Number.isInteger(parsedRatingRaw) && parsedRatingRaw >= 1 && parsedRatingRaw <= 5
+      ? parsedRatingRaw
+      : 0;
+  const trimmedMessage = message.trim();
+  if (trimmedMessage.length < 1 || trimmedMessage.length > 400) return { success: false };
+  if (!Number.isFinite(startedAt) || startedAt <= 0) return { success: false };
+  const who = whoRaw.trim();
+  const category = categoryRaw.trim();
   if (!WHO_SET.has(who)) return { success: false };
   if (!CATEGORY_SET.has(category)) return { success: false };
-  if (message.length < 1 || message.length > 400) return { success: false };
-  if (!Number.isFinite(startedAt) || startedAt <= 0) return { success: false };
   const website = o.website != null ? String(o.website) : undefined;
   const email = o.email != null ? String(o.email) : undefined;
   const turnstileToken = o.turnstileToken != null && String(o.turnstileToken).trim().length > 0
     ? String(o.turnstileToken) : undefined;
-  const parsedRating = Number(o.rating);
-  if (!Number.isInteger(parsedRating) || parsedRating < 1 || parsedRating > 5) {
-    return { success: false };
-  }
   return {
     success: true,
-    data: { who, category, message, startedAt, website, email, turnstileToken, rating: parsedRating },
+    data: { who, category, message: trimmedMessage, startedAt, website, email, turnstileToken, rating },
   };
 }
 
