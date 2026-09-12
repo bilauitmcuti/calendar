@@ -135,7 +135,6 @@ export function CalendarControls({
   const overlayOpenScrollYRef = useRef(0);
   const chatPrefetchedRef = useRef(false);
   const isPWAInstalled = usePwaInstalled();
-  const [currentFooterText, setCurrentFooterText] = useState(0);
   const { recordEngagementAction } = useEngagementPrompt();
 
   const prefetchChatDocument = useCallback(() => {
@@ -326,19 +325,6 @@ export function CalendarControls({
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, [isOpen, dropdownOpen]);
-
-  // Footer crossfade animation
-  useEffect(() => {
-    if (!isOpen) return;
-
-    // Restart footer rotation when the Settings popover opens.
-    setCurrentFooterText(0);
-
-    const interval = setInterval(() => {
-      setCurrentFooterText((prev) => (prev + 1) % 2);
-    }, 3000);
-    return () => clearInterval(interval);
-  }, [isOpen]);
 
   const positionClass = forceFixed
     ? 'fixed top-0 left-1/2 -translate-x-1/2 z-[60] w-full max-w-[1000px]'
@@ -713,74 +699,18 @@ export function CalendarControls({
                   {/* Theme Toggle */}
                   <ThemeToggle />
 
-                  {/* Made By and Source + Share/PWA */}
-                  <div className="text-left text-xs pt-0.5 space-y-3 text-muted-foreground transition-none">
-                    {/* Buttons Container */}
-                    <div className="flex flex-col gap-2 w-full transition-none">
-                      <div className="flex w-full flex-col gap-2 md:flex-row">
-                        <PwaInstallButton isInstalled={isPWAInstalled} className="md:flex-1" />
+                  <div className="flex flex-col gap-2 w-full md:flex-row transition-none">
+                    <PwaInstallButton isInstalled={isPWAInstalled} className="md:flex-1" />
 
-                        <Link href="/mcp" className="w-full md:flex-1">
-                          <Button
-                            size="default"
-                            variant="outline"
-                            className={drawerOutlineButtonClassName}
-                          >
-                            MCP Server
-                          </Button>
-                        </Link>
-                      </div>
-
-                      {/* Submit Feedback Button - Secondary */}
-                      <Link href="/feedback" className="w-full">
-                        <Button
-                          size="default"
-                          variant="outline"
-                          className={drawerOutlineButtonClassName}
-                        >
-                          Send Feedback
-                        </Button>
-                      </Link>
-                    </div>
-
-                    <div className="pt-2 transition-none relative h-5">
-                      <div 
-                        className="absolute inset-0 transition-opacity duration-200 ease-out"
-                        style={{
-                          opacity: currentFooterText === 0 ? 1 : 0,
-                          pointerEvents: currentFooterText === 0 ? 'auto' : 'none',
-                        }}
+                    <Link href="/feedback" className="w-full md:flex-1">
+                      <Button
+                        size="default"
+                        variant="outline"
+                        className={drawerOutlineButtonClassName}
                       >
-                        Domain sponsored by{' '}
-                        <a
-                          href="https://www.threads.com/@arezmie"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="font-medium md:hover:underline relative z-10"
-                          style={{color: '#2563eb'}}
-                        >
-                          @arezmie
-                        </a>
-                      </div>
-                      <div 
-                        className="absolute inset-0 transition-opacity duration-200 ease-out"
-                        style={{
-                          opacity: currentFooterText === 1 ? 1 : 0,
-                          pointerEvents: currentFooterText === 1 ? 'auto' : 'none',
-                        }}
-                      >
-                        Built by{' '}
-                        <a
-                          href="https://www.threads.com/@shahrulestar"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="font-medium md:hover:underline relative z-10"
-                          style={{color: '#2563eb'}}
-                        >
-                          @shahrulestar
-                        </a>
-                      </div>
-                    </div>
+                        Send Feedback
+                      </Button>
+                    </Link>
                   </div>
                 </div>
               </PopoverContent>

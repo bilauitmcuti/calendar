@@ -150,7 +150,9 @@ export function buildContactNotificationEmbed(params: {
   const fields: DiscordEmbedField[] = [
     { name: "Who", value: params.who, inline: true },
     { name: "Category", value: params.category, inline: true },
-    { name: "Rating", value: `${params.rating} out of 5 stars`, inline: true },
+    ...(params.rating >= 1 && params.rating <= 5
+      ? [{ name: "Rating", value: `${params.rating} out of 5 stars`, inline: true } satisfies DiscordEmbedField]
+      : []),
     { name: "Time", value: params.time, inline: false },
   ];
   if (trimmedEmail.length > 0) {
@@ -161,7 +163,7 @@ export function buildContactNotificationEmbed(params: {
     title: "User Feedback",
     color: 0x5865f2,
     fields,
-    description: params.message,
+    description: params.message.trim() || "(no comment)",
   };
 }
 

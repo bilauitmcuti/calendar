@@ -1,7 +1,6 @@
 'use client';
 
 import { Suspense, useState, useCallback, useRef, useEffect, type ReactNode } from 'react';
-import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { HugeiconsIcon } from "@hugeicons/react";
 import { ArrowLeft01Icon } from "@hugeicons/core-free-icons";
@@ -266,55 +265,6 @@ function QueryTabContent() {
   );
 }
 
-function AboutSponsorSection() {
-  return (
-    <article className="typeset typeset-article">
-      <h2>
-        About <BrandName />
-      </h2>
-      <p>Learn what this project covers, how the calendar works, and where to send feedback.</p>
-      <div className="not-typeset mt-[var(--typeset-flow)]">
-        <Button
-          render={<Link href="/about" />}
-          nativeButton={false}
-          variant="default"
-          className="h-[38px] w-fit"
-        >
-          About
-        </Button>
-      </div>
-
-      <h2>Become Our Sponsors</h2>
-      <p>Support the project and help keep the calendar free for everyone.</p>
-      <div className="not-typeset mt-[var(--typeset-flow)] flex flex-row flex-wrap items-center gap-2">
-        <Button
-          render={
-            <a href="https://shahrulestar.com/sponsor" target="_blank" rel="noopener noreferrer" />
-          }
-          nativeButton={false}
-          className="h-[38px] w-fit"
-        >
-          Sponsor
-        </Button>
-        <Button
-          variant="outline"
-          render={
-            <a
-              href="https://github.com/sponsors/shahrulestar"
-              target="_blank"
-              rel="noopener noreferrer"
-            />
-          }
-          nativeButton={false}
-          className="h-[38px] w-fit"
-        >
-          Github Sponsor
-        </Button>
-      </div>
-    </article>
-  );
-}
-
 export default function DownloadPage() {
   return (
     <Suspense fallback={null}>
@@ -473,8 +423,6 @@ function DownloadPageContent() {
               <QueryTabContent />
             </TabsContent>
           </Tabs>
-
-          <AboutSponsorSection />
         </div>
       </div>
 
