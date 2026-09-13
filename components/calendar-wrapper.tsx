@@ -37,6 +37,7 @@ export async function CalendarWrapper({ viewMode, programFromRoute }: CalendarWr
       initialDayShort={initialDayShort}
       initialDateLabel={initialDateLabel}
       initialLectureWeekByDate={initialCalendar.lectureWeekByDate}
+      initialPublicHolidaysByYear={initialCalendar.publicHolidaysByYear}
       initialCalendarSnapshot={initialCalendar.snapshot}
       initialCalendarHydration={
         initialCalendar.programUsed != null && initialCalendar.hydrateKey != null

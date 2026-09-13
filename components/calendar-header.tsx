@@ -121,7 +121,7 @@ export function CalendarHeader({
       <div className="flex items-center gap-2" role="listitem">
         <div className="h-2 w-2 rounded-full bg-[#10b981]" aria-hidden="true" />
         <span className={mutedColor} suppressHydrationWarning>
-          Break
+          Breaks
         </span>
       </div>
     </div>

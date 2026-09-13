@@ -3,7 +3,12 @@ import {
   calendarProgramQueryForRoute,
   type CalendarSessionResult,
 } from "@/lib/calendar-api";
-import { fetchCalendarSession } from "@/lib/calendar-api-server";
+import { fetchCalendarSession, fetchPublicHolidays } from "@/lib/calendar-api-server";
+import type { PublicHolidayRow } from "@/lib/calendar-api";
+import {
+  holidayYearsForSessions,
+  type PublicHolidaysByYear,
+} from "@/lib/public-holidays-for-view";
 import { mergeLectureWeekRecords } from "@/lib/lecture-weeks-resolve";
 import { resolveSessionsForProgram } from "@/lib/calendar-session-resolve";
 import { fetchMetaCachedEntireForRsc } from "@/lib/calendar-server-meta";
@@ -87,6 +92,8 @@ export interface InitialCalendarLoadResult {
   hydrateKey: string | null;
   /** ISO date → lecture week number for header badge SSR (empty when unavailable). */
   lectureWeekByDate: Record<string, number> | null;
+  /** Year → public holiday rows prefetched for selected sessions. */
+  publicHolidaysByYear: PublicHolidaysByYear;
 }
 
 function buildHydrateKeyForProgram(program: ProgramValue, sessionIds: SessionId[]): string {
@@ -127,26 +134,41 @@ export async function loadInitialCalendarSnapshot(params: {
       lectureWeekBySession: {} as Record<string, Record<string, number>>,
     };
 
+    const holidayYears = holidayYearsForSessions(targets, {
+      sessionOptions: meta.sessionOptions,
+    });
+
     if (targets.length === 0) {
       return {
         snapshot: { ...baseSnapshot, sessions: {} },
         programUsed: program,
         hydrateKey,
         lectureWeekByDate: null,
+        publicHolidaysByYear: {},
       };
     }
 
-    const sessionResults = await Promise.all(
-      targets.map(async (sid) => {
-        const g = sid.startsWith("A-") ? "A" : "B";
-        const result = await fetchCalendarSession({
-          sessionId: sid,
-          group: g,
-          program: g === "B" ? (programQ ?? "All") : undefined,
-        }).catch((): CalendarSessionResult => ({ activities: [] }));
-        return [sid, result] as const;
-      })
-    );
+    const [sessionResults, holidayResults] = await Promise.all([
+      Promise.all(
+        targets.map(async (sid) => {
+          const g = sid.startsWith("A-") ? "A" : "B";
+          const result = await fetchCalendarSession({
+            sessionId: sid,
+            group: g,
+            program: g === "B" ? (programQ ?? "All") : undefined,
+          }).catch((): CalendarSessionResult => ({ activities: [] }));
+          return [sid, result] as const;
+        })
+      ),
+      Promise.all(
+        holidayYears.map(async (year) => {
+          const result = await fetchPublicHolidays({ coverage: "all", year }).catch(() => ({
+            holidays: [] as PublicHolidayRow[],
+          }));
+          return [year, result.holidays] as const;
+        })
+      ),
+    ]);
 
     const merges: Record<string, { activities: Activity[] }> = {};
     const lectureWeekBySession: Record<string, Record<string, number>> = {};
@@ -157,6 +179,11 @@ export async function loadInitialCalendarSnapshot(params: {
         lectureWeekBySession[sid] = payload.lectureWeekByDate;
         weekRecords.push(payload.lectureWeekByDate);
       }
+    }
+
+    const publicHolidaysByYear: PublicHolidaysByYear = {};
+    for (const [year, holidays] of holidayResults) {
+      publicHolidaysByYear[year] = holidays;
     }
 
     const lectureWeekByDate = mergeLectureWeekRecords(weekRecords);
@@ -172,6 +199,7 @@ export async function loadInitialCalendarSnapshot(params: {
       programUsed: program,
       hydrateKey,
       lectureWeekByDate: hasWeeks ? lectureWeekByDate : null,
+      publicHolidaysByYear,
     };
   } catch {
     return {
@@ -179,6 +207,7 @@ export async function loadInitialCalendarSnapshot(params: {
       programUsed: null,
       hydrateKey: null,
       lectureWeekByDate: null,
+      publicHolidaysByYear: {},
     };
   }
 }

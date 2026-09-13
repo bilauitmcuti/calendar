@@ -78,7 +78,7 @@ const publicHolidaysCache = new Map<
   string,
   { data: PublicHolidaysResponse; at: number }
 >();
-const PUBLIC_HOLIDAYS_TTL_MS = 5 * 60 * 1000;
+const PUBLIC_HOLIDAYS_TTL_MS = 60 * 60 * 1000;
 
 /** Server-only upstream fetch for chat (never routed through the browser proxy). */
 export async function fetchPublicHolidays(

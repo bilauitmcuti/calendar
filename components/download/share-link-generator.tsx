@@ -64,7 +64,7 @@ const FILTER_OPTION_ROWS: {
   { key: 'intersession', label: 'Intersession Classes' },
   { key: 'exam', label: 'Examination', always: true },
   { key: 'other-exam', label: 'Others Exams' },
-  { key: 'break', label: 'Break', always: true },
+  { key: 'break', label: 'Breaks & Holidays', always: true },
   { key: 'states', label: 'Kedah, Kelantan & Terengganu' },
 ];
 

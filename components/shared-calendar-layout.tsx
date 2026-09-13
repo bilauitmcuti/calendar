@@ -24,6 +24,7 @@ import {
   subscribe,
 } from '@/lib/calendar-store';
 import type { CalendarSnapshot } from '@/lib/calendar-store';
+import type { PublicHolidaysByYear } from '@/lib/public-holidays-for-view';
 import { DEFAULT_FILTER_STATES, getGroupFromSession, getDefaultSessionForGroup } from '@/lib/data';
 import type { SessionId } from '@/lib/data';
 import { setFiltersToCookie, type FilterStates } from '@/lib/cookie-utils';
@@ -54,6 +55,7 @@ interface SharedCalendarLayoutProps {
     programUsed: ProgramValue;
     hydrateKey: string;
   } | null;
+  initialPublicHolidaysByYear?: PublicHolidaysByYear;
 }
 
 export function SharedCalendarLayout({ 
@@ -66,6 +68,7 @@ export function SharedCalendarLayout({
   initialLectureWeekByDate = null,
   initialCalendarSnapshot = null,
   initialCalendarHydration = null,
+  initialPublicHolidaysByYear = {},
 }: SharedCalendarLayoutProps) {
   const hydrationVersion = initialCalendarSnapshot?.version ?? 0;
   // Apply RSC payload synchronously so children read the right getSnapshot(); do not emit here
@@ -589,6 +592,7 @@ export function SharedCalendarLayout({
             selectedStates={selectedStates}
             initialCurrentDate={initialCurrentDate}
             initialLectureWeekByDate={initialLectureWeekByDate}
+            initialPublicHolidaysByYear={initialPublicHolidaysByYear}
           />
         </div>
 
