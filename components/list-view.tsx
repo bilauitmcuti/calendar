@@ -18,6 +18,8 @@ import {
   type ProgramGroup,
   type SessionId,
 } from '@/lib/data';
+import type { PublicHolidayRow } from '@/lib/calendar-api';
+import { formatHolidayStates, listMonthKeyFromIsoDate } from '@/lib/public-holidays-for-view';
 
 function formatListDate(dateStr: string) {
   const [year, monthNum, day] = dateStr.split('-').map(Number);
@@ -184,6 +186,46 @@ function ListActivityDetails({
   );
 }
 
+interface ListHolidayDetailsProps {
+  holiday: PublicHolidayRow;
+  textClass: string;
+  mutedClass: string;
+}
+
+function ListHolidayDetails({ holiday, textClass, mutedClass }: ListHolidayDetailsProps) {
+  const title = holiday.isSubjectToChange ? `${holiday.name} *` : holiday.name;
+  const statesLabel = formatHolidayStates(holiday.states);
+  return (
+    <div className="flex flex-1 flex-col transition-none" suppressHydrationWarning>
+      <div className="mb-1 flex items-start gap-2 transition-none" suppressHydrationWarning>
+        <div className="flex h-[1lh] shrink-0 items-center text-base leading-6" suppressHydrationWarning>
+          <div
+            className="h-2 w-2 shrink-0 rounded-full bg-[#10b981] transition-none"
+            aria-hidden
+            suppressHydrationWarning
+          />
+        </div>
+        <h3
+          className={`min-w-0 flex-1 font-medium break-words text-base leading-6 ${textClass} transition-none`}
+          suppressHydrationWarning
+        >
+          {title}
+        </h3>
+      </div>
+      <div className="w-full transition-none" suppressHydrationWarning>
+        <p className={`text-sm leading-5 break-words ${mutedClass} transition-none`} suppressHydrationWarning>
+          {formatDateRange(holiday.date)}
+        </p>
+        {statesLabel ? (
+          <p className={`mt-1 text-sm font-normal leading-4 break-words ${mutedClass}`} suppressHydrationWarning>
+            {statesLabel}
+          </p>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
 function getActivityCountdownLabel(
   activity: Activity,
   todayStr: string,
@@ -213,6 +255,7 @@ interface ListViewProps {
   selectedStates?: string[];
   /** Malaysia YYYY-MM-DD from RSC; keeps countdown row identical on SSR and first client paint */
   initialCurrentDate?: string;
+  holidaysByDate?: Record<string, PublicHolidayRow[]>;
 }
 
 function getMalaysiaTodayStr(): string {
@@ -244,6 +287,7 @@ export const ListView = memo(function ListView({
   onMonthChange,
   selectedStates = [],
   initialCurrentDate,
+  holidaysByDate = {},
 }: ListViewProps) {
   const hydrationServerVersion = useCalendarHydrationVersion();
   const calendarDataVersion = useSyncExternalStore(
@@ -337,6 +381,18 @@ export const ListView = memo(function ListView({
     [uniqueActivities]
   );
 
+  const holidayDatesByMonth = useMemo(() => {
+    const acc: Record<string, string[]> = {};
+    for (const dateStr of Object.keys(holidaysByDate)) {
+      const monthKey = listMonthKeyFromIsoDate(dateStr);
+      (acc[monthKey] ??= []).push(dateStr);
+    }
+    for (const key of Object.keys(acc)) {
+      acc[key]!.sort();
+    }
+    return acc;
+  }, [holidaysByDate]);
+
   const getActivityColor = (activity: Activity) => {
     if (activity.type === 'registration') return 'bg-[#d1d5db]';
     if (activity.type === 'lecture') return 'bg-[#8b5cf6]';
@@ -347,15 +403,18 @@ export const ListView = memo(function ListView({
 
   const sortedMonths = useMemo(
     () =>
-      Object.keys(groupedByMonth).sort((a, b) => {
-        const pa = parseListMonthKey(a);
-        const pb = parseListMonthKey(b);
-        return pa.year !== pb.year ? pa.year - pb.year : pa.month - pb.month;
-      }),
-    [groupedByMonth]
+      [...new Set([...Object.keys(groupedByMonth), ...Object.keys(holidayDatesByMonth)])].sort(
+        (a, b) => {
+          const pa = parseListMonthKey(a);
+          const pb = parseListMonthKey(b);
+          return pa.year !== pb.year ? pa.year - pb.year : pa.month - pb.month;
+        }
+      ),
+    [groupedByMonth, holidayDatesByMonth]
   );
 
   const hasAnyActivities = uniqueActivities.length > 0;
+  const hasAnyHolidays = Object.keys(holidaysByDate).length > 0;
 
   const bgClass = 'bg-background';
   const textClass = 'text-foreground';
@@ -364,7 +423,7 @@ export const ListView = memo(function ListView({
 
   return (
     <div className={`space-y-8 ${bgClass} transition-none`} suppressHydrationWarning>
-      {!hasAnyActivities ? (
+      {!hasAnyActivities && !hasAnyHolidays ? (
         <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
           <p className={`text-lg font-medium ${textClass} mb-2`}>No activities match your filters</p>
           <p className={`text-sm ${mutedClass} max-w-md`}>
@@ -373,7 +432,17 @@ export const ListView = memo(function ListView({
         </div>
       ) : sortedMonths.map((month) => {
         // Hide months with no activities
-        if (!groupedByMonth[month] || groupedByMonth[month].length === 0) {
+        const monthActivities = groupedByMonth[month] ?? [];
+        const activityGroups = groupActivitiesByListStartDate(monthActivities, showKKT);
+        const activitiesByDate = new Map(activityGroups.map((group) => [group.dateStr, group.activities]));
+        const dateKeys = [
+          ...new Set([
+            ...activityGroups.map((group) => group.dateStr),
+            ...(holidayDatesByMonth[month] ?? []),
+          ]),
+        ].sort();
+
+        if (dateKeys.length === 0) {
           return null;
         }
         
@@ -384,8 +453,9 @@ export const ListView = memo(function ListView({
           </div>
           
           <div className="space-y-4 transition-none" suppressHydrationWarning>
-            {groupedByMonth[month] && groupedByMonth[month].length > 0 ? (
-              groupActivitiesByListStartDate(groupedByMonth[month], showKKT).map(({ dateStr, activities }) => {
+            {dateKeys.map((dateStr) => {
+                const activities = activitiesByDate.get(dateStr) ?? [];
+                const holidays = holidaysByDate[dateStr] ?? [];
                 return (
                   <div key={dateStr} className="space-y-2 md:space-y-4 transition-none" suppressHydrationWarning>
                     <ListDateColumn
@@ -431,11 +501,29 @@ export const ListView = memo(function ListView({
                           </div>
                         );
                       })}
+                      {holidays.map((holiday) => (
+                        <div
+                          key={`${holiday.id}|${holiday.date}`}
+                          className="flex gap-4 rounded-lg p-3 px-0 transition-none md:flex-row"
+                          suppressHydrationWarning
+                        >
+                          <ListDateColumn
+                            dateStr={holiday.date}
+                            textClass={textClass}
+                            mutedClass={mutedClass}
+                            className="hidden md:flex"
+                          />
+                          <ListHolidayDetails
+                            holiday={holiday}
+                            textClass={textClass}
+                            mutedClass={mutedClass}
+                          />
+                        </div>
+                      ))}
                     </div>
                   </div>
                 );
-              })
-            ) : null}
+              })}
           </div>
         </div>
         );

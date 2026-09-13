@@ -381,15 +381,40 @@ export interface PublicHolidaysResponse {
   year: number;
   total: number;
   holidays: PublicHolidayRow[];
+  /** Available dataset years from the API; grows as 2027+ is published. */
+  yearOptions: number[];
 }
 
 const publicHolidaysInflight = new Map<string, Promise<PublicHolidaysResponse>>();
 const publicHolidaysCache = new Map<string, { data: PublicHolidaysResponse; at: number }>();
-const PUBLIC_HOLIDAYS_TTL_MS = 5 * 60 * 1000;
+const PUBLIC_HOLIDAYS_TTL_MS = 60 * 60 * 1000;
+
+function parseHolidayYearOptions(value: unknown): number[] {
+  if (!Array.isArray(value)) return [];
+  const years = new Set<number>();
+  for (const row of value) {
+    if (typeof row === "number" && Number.isFinite(row)) {
+      years.add(row);
+      continue;
+    }
+    if (row && typeof row === "object") {
+      const raw = (row as { value?: unknown }).value;
+      const n = typeof raw === "number" ? raw : typeof raw === "string" ? Number(raw) : NaN;
+      if (Number.isFinite(n)) years.add(n);
+    }
+  }
+  return [...years].sort((a, b) => a - b);
+}
 
 export function parsePublicHolidaysResponse(data: unknown): PublicHolidaysResponse {
   if (!data || typeof data !== "object") {
-    return { defaultYear: new Date().getFullYear(), year: new Date().getFullYear(), total: 0, holidays: [] };
+    return {
+      defaultYear: new Date().getFullYear(),
+      year: new Date().getFullYear(),
+      total: 0,
+      holidays: [],
+      yearOptions: [],
+    };
   }
   const o = data as Record<string, unknown>;
   const query = (o.query && typeof o.query === "object" ? o.query : {}) as Record<string, unknown>;
@@ -414,7 +439,7 @@ export function parsePublicHolidaysResponse(data: unknown): PublicHolidaysRespon
       })
     : [];
   const total = typeof o.total === "number" ? o.total : holidays.length;
-  return { defaultYear, year, total, holidays };
+  return { defaultYear, year, total, holidays, yearOptions: parseHolidayYearOptions(o.yearOptions) };
 }
 
 /**

@@ -32,6 +32,8 @@ import {
   subscribe,
 } from '@/lib/calendar-store';
 import { getActivitiesForDateMultiSessions, getMonthsForSessions, getDaysUntilStart, formatCountdown, getProgramBadgeConfig, getProgramBadgesConfig, type Activity, type ActivityFilterOptions, type ActivityType, type SessionId } from '@/lib/data';
+import type { PublicHolidayRow } from '@/lib/calendar-api';
+import { formatHolidayStates } from '@/lib/public-holidays-for-view';
 import { resolveLectureWeekMapForSessions } from '@/lib/lecture-weeks-resolve';
 import { useMobileViewport } from '@/lib/use-mobile-viewport';
 import { useEngagementPrompt } from '@/components/engagement-prompt';
@@ -52,6 +54,7 @@ interface TooltipActivityListProps {
   listScrollRef?: React.RefCallback<HTMLDivElement>;
   /** Drawer only: enable inner scroll (long lists with snap). */
   listScrollable?: boolean;
+  holidays?: PublicHolidayRow[];
 }
 
 function TooltipActivityList({
@@ -66,6 +69,7 @@ function TooltipActivityList({
   surface,
   listScrollRef,
   listScrollable = false,
+  holidays = [],
 }: TooltipActivityListProps) {
   const badgeTextClass = 'text-xs';
   const activityTextClass = surface === 'tooltip' ? 'text-xs' : 'text-sm';
@@ -102,7 +106,7 @@ function TooltipActivityList({
 
   useEffect(() => {
     setStartIndex(0);
-  }, [dateKey, activities.length, weekNum]);
+  }, [dateKey, activities.length, holidays.length, weekNum]);
 
   // Overflow measure only gates scroll-fade — never gates overflow-y-auto,
   // so long lists paint immediately (toggling overflow/mask was delaying text).
@@ -150,7 +154,7 @@ function TooltipActivityList({
       if (fadeRaf) cancelAnimationFrame(fadeRaf);
       ro.disconnect();
     };
-  }, [surface, listScrollable, dateKey, activities, weekNum]);
+  }, [surface, listScrollable, dateKey, activities, holidays, weekNum]);
 
   const shouldPaginate = listMode === 'paginated' && isMobile && activities.length > PAGE_SIZE;
   const hasPrev = startIndex > 0;
@@ -264,6 +268,33 @@ function TooltipActivityList({
           );
         })}
 
+        {holidays.map((holiday) => {
+          const title = holiday.isSubjectToChange ? `${holiday.name} *` : holiday.name;
+          const statesLabel = formatHolidayStates(holiday.states);
+          return (
+            <div key={`${holiday.id}|${holiday.date}`} className="min-w-0 transition-none">
+              <div className="flex items-start gap-2 transition-none">
+                <div className={activityDotColumnClass}>
+                  <div
+                    className="h-2 w-2 shrink-0 rounded-full bg-[#10b981] transition-none"
+                    aria-hidden
+                  />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className={cn(activityTextClass, 'leading-relaxed whitespace-normal text-wrap break-words [overflow-wrap:anywhere] transition-none')}>
+                    {title}
+                  </p>
+                  {statesLabel ? (
+                    <p className={cn('mt-1', mutedTextClass)}>
+                      {statesLabel}
+                    </p>
+                  ) : null}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+
         {shouldPaginate && hasNext ? (
           <div className="pt-1">
             <button
@@ -351,6 +382,7 @@ interface GridDayActivitiesPanelProps {
   surface: 'tooltip' | 'drawer';
   listScrollRef?: React.RefCallback<HTMLDivElement>;
   listScrollable?: boolean;
+  holidays?: PublicHolidayRow[];
 }
 
 function GridDayActivitiesPanel({
@@ -364,6 +396,7 @@ function GridDayActivitiesPanel({
   surface,
   listScrollRef,
   listScrollable = false,
+  holidays = [],
 }: GridDayActivitiesPanelProps) {
   if (surface === 'tooltip') {
     return (
@@ -377,6 +410,7 @@ function GridDayActivitiesPanel({
         listMode="paginated"
         weekNum={weekNum}
         surface="tooltip"
+        holidays={holidays}
       />
     );
   }
@@ -394,6 +428,7 @@ function GridDayActivitiesPanel({
       surface="drawer"
       listScrollRef={listScrollRef}
       listScrollable={listScrollable}
+      holidays={holidays}
     />
   );
 }
@@ -445,9 +480,12 @@ interface GridViewProps {
   selectedStates?: string[];
   initialCurrentDate?: string;
   initialLectureWeekByDate?: Record<string, number> | null;
+  holidaysByDate?: Record<string, PublicHolidayRow[]>;
 }
 
-function MiniCalendar({ month, year, selectedProgram, selectedSessions, showKKT, onDateClick, selectedDate, showRegistration, showLecture, showSemesterPendek, showKuliahIntersesi, showExamination, showOthersExams, showBreak, showCountdown, selectedStates = [], initialCurrentDate, tooltipOpenKey, hoveredDateStr, setTooltipOpenKey, setHoveredDateStr, tooltipAnchorRef, calendarDataVersion, suppressHoverDuringScrollRef, lectureWeekByDate, useDayActivityDrawer, onOpenActivityDrawer }: { month: number; year: number; selectedProgram: string; selectedSessions: SessionId[]; showKKT: boolean; onDateClick: (date: string) => void; selectedDate: string | null; showRegistration: boolean; showLecture: boolean; showSemesterPendek: boolean; showKuliahIntersesi: boolean; showExamination: boolean; showOthersExams: boolean; showBreak: boolean; showCountdown: boolean; selectedStates?: string[]; initialCurrentDate?: string; tooltipOpenKey: string | null; hoveredDateStr: string | null; setTooltipOpenKey: React.Dispatch<React.SetStateAction<string | null>>; setHoveredDateStr: React.Dispatch<React.SetStateAction<string | null>>; tooltipAnchorRef: React.MutableRefObject<HTMLElement | null>; calendarDataVersion: number; suppressHoverDuringScrollRef: React.MutableRefObject<boolean>; lectureWeekByDate: Map<string, number> | null; useDayActivityDrawer: boolean; onOpenActivityDrawer: (dateStr: string) => void }) {
+const miniCalendarCellFrame = 'aspect-square w-full rounded-md';
+
+function MiniCalendar({ month, year, selectedProgram, selectedSessions, showKKT, onDateClick, selectedDate, showRegistration, showLecture, showSemesterPendek, showKuliahIntersesi, showExamination, showOthersExams, showBreak, showCountdown, selectedStates = [], initialCurrentDate, tooltipOpenKey, hoveredDateStr, setTooltipOpenKey, setHoveredDateStr, tooltipAnchorRef, calendarDataVersion, suppressHoverDuringScrollRef, lectureWeekByDate, useDayActivityDrawer, onOpenActivityDrawer, holidaysByDate = {} }: { month: number; year: number; selectedProgram: string; selectedSessions: SessionId[]; showKKT: boolean; onDateClick: (date: string) => void; selectedDate: string | null; showRegistration: boolean; showLecture: boolean; showSemesterPendek: boolean; showKuliahIntersesi: boolean; showExamination: boolean; showOthersExams: boolean; showBreak: boolean; showCountdown: boolean; selectedStates?: string[]; initialCurrentDate?: string; tooltipOpenKey: string | null; hoveredDateStr: string | null; setTooltipOpenKey: React.Dispatch<React.SetStateAction<string | null>>; setHoveredDateStr: React.Dispatch<React.SetStateAction<string | null>>; tooltipAnchorRef: React.MutableRefObject<HTMLElement | null>; calendarDataVersion: number; suppressHoverDuringScrollRef: React.MutableRefObject<boolean>; lectureWeekByDate: Map<string, number> | null; useDayActivityDrawer: boolean; onOpenActivityDrawer: (dateStr: string) => void; holidaysByDate?: Record<string, PublicHolidayRow[]> }) {
   const [hasHoverCapability, setHasHoverCapability] = useState(false);
   const [hasTouchInput, setHasTouchInput] = useState(false);
 
@@ -733,42 +771,58 @@ function MiniCalendar({ month, year, selectedProgram, selectedSessions, showKKT,
     return getDayActivities(day).slice(0, 3);
   };
 
+  const getActivityDotColor = (type: ActivityType): string => {
+    if (type === 'registration') return 'bg-[#d1d5db]';
+    if (type === 'lecture') return 'bg-[#8b5cf6]';
+    if (type === 'examination') return 'bg-[#dc2626]';
+    if (type === 'break') return 'bg-[#10b981]';
+    return 'bg-gray-400';
+  };
+
   const getIndicatorDots = (day: number | null) => {
     if (!day) return null;
-    
+
     const priorityActivities = getPriorityActivitiesForDay(day);
-    
-    if (priorityActivities.length === 0) return null;
-    
-    // Show dots for up to 3 highest priority activities, grouped by type
+    const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    const dayHolidays = holidaysByDate[dateStr] ?? [];
+
     const activityTypeMap = new Map<ActivityType, Activity>();
-    
     for (const activity of priorityActivities) {
-      // Only add one activity per type (the first/highest priority one)
       if (!activityTypeMap.has(activity.type)) {
         activityTypeMap.set(activity.type, activity);
       }
     }
-    
-    const uniqueActivities = Array.from(activityTypeMap.values());
-    
+
+    const dots: Array<{ key: string; color: string }> = [];
+    for (const activity of activityTypeMap.values()) {
+      dots.push({
+        key: `${activity.type}|${activity.name}|${activity.startDate}`,
+        color: getActivityDotColor(activity.type),
+      });
+    }
+
+    const hasBreakDot = activityTypeMap.has('break');
+    if (dayHolidays.length > 0 && !hasBreakDot) {
+      dots.push({
+        key: `${dateStr}-public-holiday`,
+        color: 'bg-[#10b981]',
+      });
+    }
+
+    const visibleDots = dots.slice(0, 3);
+
     return (
-      <div className="flex gap-1 justify-center mt-1 transition-none" style={{ transition: 'none' }}>
-        {uniqueActivities.map((activity) => {
-          let dotColor = 'bg-gray-400';
-          if (activity.type === 'registration') dotColor = 'bg-[#d1d5db]';
-          if (activity.type === 'lecture') dotColor = 'bg-[#8b5cf6]';
-          if (activity.type === 'examination') dotColor = 'bg-[#dc2626]';
-          if (activity.type === 'break') dotColor = 'bg-[#10b981]';
-          
-          return (
-            <div
-              key={activity.name + activity.startDate}
-              className={`h-1.5 w-1.5 rounded-full ${dotColor} transition-none`}
-              style={{ transition: 'none' }}
-            />
-          );
-        })}
+      <div
+        className="mt-1 flex h-1.5 min-h-[6px] items-center justify-center gap-1 transition-none"
+        style={{ transition: 'none' }}
+      >
+        {visibleDots.map((dot) => (
+          <div
+            key={dot.key}
+            className={`h-1.5 w-1.5 rounded-full ${dot.color} transition-none`}
+            style={{ transition: 'none' }}
+          />
+        ))}
       </div>
     );
   };
@@ -805,7 +859,7 @@ function MiniCalendar({ month, year, selectedProgram, selectedSessions, showKKT,
             return (
               <div
                 key={index}
-                className={`flex flex-col h-12 items-center justify-center text-xs font-medium ${textClass} transition-none`}
+                className={`flex flex-col aspect-square w-full items-center justify-center text-xs font-medium ${textClass} transition-none`}
                 style={{ transition: 'none' }}
                 suppressHydrationWarning
               />
@@ -822,6 +876,8 @@ function MiniCalendar({ month, year, selectedProgram, selectedSessions, showKKT,
           const uniqueDayActivities = dateStr
             ? dedupDayActivities(getDayActivities(day), selectedProgram)
             : [];
+          const dayHolidays = dateStr ? holidaysByDate[dateStr] ?? [] : [];
+          const hasDayItems = uniqueDayActivities.length > 0 || dayHolidays.length > 0;
 
           const calendarCell = (
             <div
@@ -830,13 +886,13 @@ function MiniCalendar({ month, year, selectedProgram, selectedSessions, showKKT,
                 if (!dateStr) return;
                 if (useDayActivityDrawer) {
                   onDateClick(dateStr);
-                  if (uniqueDayActivities.length > 0) {
+                  if (hasDayItems) {
                     onOpenActivityDrawer(dateStr);
                   }
                   return;
                 }
                 if (!isDesktopHoverMode) {
-                  if (uniqueDayActivities.length > 0) {
+                  if (hasDayItems) {
                     const nextKey = tooltipOpenKey === dateStr ? null : dateStr;
                     tooltipAnchorRef.current = nextKey ? e.currentTarget : null;
                     setTooltipOpenKey(nextKey);
@@ -850,7 +906,7 @@ function MiniCalendar({ month, year, selectedProgram, selectedSessions, showKKT,
                 if (suppressHoverDuringScrollRef.current) return;
                 if (!isDesktopHoverMode || !dateStr) return;
                 setHoveredDateStr(dateStr);
-                if (uniqueDayActivities.length > 0) {
+                if (hasDayItems) {
                   tooltipAnchorRef.current = e.currentTarget;
                   setTooltipOpenKey(dateStr);
                   return;
@@ -881,7 +937,7 @@ function MiniCalendar({ month, year, selectedProgram, selectedSessions, showKKT,
                 // Keep focus suppression on hover devices only.
                 if (isDesktopHoverMode) e.currentTarget.blur();
               }}
-              className={`calendar-date-cell flex flex-col h-12 items-center justify-center rounded-lg text-sm font-semibold cursor-pointer transition-none touch-manipulation select-none outline-none focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0 focus:shadow-none focus-visible:shadow-none [&:focus]:ring-0 [&:focus-visible]:ring-0 [&:focus]:shadow-none [&:focus-visible]:shadow-none [&:focus]:outline-none [&:focus-visible]:outline-none ${dayColor} ${isHighlighted ? highlightColor : ''} ${isSelected ? `ring-2 ${ringColor}` : ''} ${isCurrentDate(day) && isCurrentDateInRange ? borderColor : 'border border-transparent'} ${textClass}`}
+              className={`calendar-date-cell flex flex-col ${miniCalendarCellFrame} items-center justify-center text-sm font-semibold cursor-pointer transition-none touch-manipulation select-none outline-none focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0 focus:shadow-none focus-visible:shadow-none [&:focus]:ring-0 [&:focus-visible]:ring-0 [&:focus]:shadow-none [&:focus-visible]:shadow-none [&:focus]:outline-none [&:focus-visible]:outline-none ${dayColor} ${isHighlighted ? highlightColor : ''} ${isSelected ? `ring-2 ${ringColor}` : ''} ${isCurrentDate(day) && isCurrentDateInRange ? borderColor : 'border border-transparent'} ${textClass}`}
               tabIndex={-1}
               suppressHydrationWarning
             >
@@ -917,6 +973,7 @@ export const GridView = memo(function GridView({
   selectedStates = [],
   initialCurrentDate,
   initialLectureWeekByDate = null,
+  holidaysByDate = {},
 }: GridViewProps) {
   const hydrationServerVersion = useCalendarHydrationVersion();
   const calendarDataVersion = useSyncExternalStore(
@@ -1084,11 +1141,12 @@ export const GridView = memo(function GridView({
       for (let day = 1; day <= daysInMonth; day++) {
         const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
         const activities = getActivitiesForDateMultiSessions(dateStr, selectedSessions, showKKT, gridFilterOptions);
-        if (activities.length > 0) keys.push(dateStr);
+        const holidays = holidaysByDate[dateStr] ?? [];
+        if (activities.length > 0 || holidays.length > 0) keys.push(dateStr);
       }
     }
     return keys;
-  }, [months, selectedSessions, showKKT, gridFilterOptions, calendarDataVersion]);
+  }, [months, selectedSessions, showKKT, gridFilterOptions, calendarDataVersion, holidaysByDate]);
 
   const drawerActivities = useMemo<Activity[]>(() => {
     if (calendarDataVersion < 0 || !drawerDateKey) return [];
@@ -1104,8 +1162,9 @@ export const GridView = memo(function GridView({
       gridFilterOptions,
       selectedProgram
     );
-    if (activities.length === 0) return null;
-    return { dateStr: tooltipOpenKey, activities };
+    const holidays = holidaysByDate[tooltipOpenKey] ?? [];
+    if (activities.length === 0 && holidays.length === 0) return null;
+    return { dateStr: tooltipOpenKey, activities, holidays };
   }, [
     tooltipOpenKey,
     selectedSessions,
@@ -1113,6 +1172,7 @@ export const GridView = memo(function GridView({
     gridFilterOptions,
     selectedProgram,
     calendarDataVersion,
+    holidaysByDate,
   ]);
 
   const drawerNavIndex = drawerDateKey ? activityDateKeys.indexOf(drawerDateKey) : -1;
@@ -1246,6 +1306,7 @@ export const GridView = memo(function GridView({
               lectureWeekByDate={lectureWeekByDate}
               useDayActivityDrawer={isMobileViewport}
               onOpenActivityDrawer={handleOpenActivityDrawer}
+              holidaysByDate={holidaysByDate}
             />
           ))}
         </div>
@@ -1283,6 +1344,7 @@ export const GridView = memo(function GridView({
               currentDateStr={drawerCurrentDateStr}
               showKKT={showKKT}
               surface="tooltip"
+              holidays={activeTooltipData.holidays}
             />
           </TooltipContent>
         </Tooltip>
@@ -1336,6 +1398,7 @@ export const GridView = memo(function GridView({
                     surface="drawer"
                     listScrollRef={setDrawerSwipeAreaRef}
                     listScrollable
+                    holidays={holidaysByDate[drawerDateKey] ?? []}
                   />
                 </ActivityDrawerAnimatedSection>
                 <div

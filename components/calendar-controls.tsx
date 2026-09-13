@@ -662,7 +662,7 @@ export function CalendarControls({
                     )}
 
                     <SettingsSwitchRow
-                      label="Break"
+                      label="Breaks & Holidays"
                       checked={showBreak}
                       onChange={(checked) => onFilterToggle(checked, onShowBreakChange)}
                       ariaLabel="Toggle break events"
