@@ -80,17 +80,20 @@ export function holidayYearsForSessions(
   const years = new Set<number>();
 
   for (const sessionId of sessionIds) {
+    let hadRange = false;
     const activityRange = getSessionActivityDateRange(sessionId);
     if (activityRange) {
       for (const year of yearsInclusiveFromRange(activityRange)) years.add(year);
-      continue;
+      hadRange = true;
     }
     const labelRange = sessionLabelRange(sessionId, options?.sessionOptions);
     if (labelRange) {
       for (const year of yearsInclusiveFromRange(labelRange)) years.add(year);
-      continue;
+      hadRange = true;
     }
-    for (const year of holidayYearsFromSessionIds([sessionId])) years.add(year);
+    if (!hadRange) {
+      for (const year of holidayYearsFromSessionIds([sessionId])) years.add(year);
+    }
   }
 
   let list = [...years].sort((a, b) => a - b);

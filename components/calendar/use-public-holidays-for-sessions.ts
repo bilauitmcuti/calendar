@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { fetchPublicHolidays } from "@/lib/calendar-api";
 import type { PublicHolidayRow } from "@/lib/calendar-api";
-import type { SessionId } from "@/lib/data";
+import { getSessionOptions, type SessionId } from "@/lib/data";
 import {
   buildHolidaysByDateIndex,
   flattenHolidaysByYear,
@@ -35,6 +35,7 @@ export function usePublicHolidaysForSessions(
     void calendarDataVersion;
     return holidayYearsForSessions(sessionIds, {
       allowedYears: allowedYears.length > 0 ? allowedYears : undefined,
+      sessionOptions: getSessionOptions(),
     });
   }, [sessionIds, calendarDataVersion, allowedYears]);
 
@@ -74,7 +75,9 @@ export function usePublicHolidaysForSessions(
 
   const range = useMemo(() => {
     void calendarDataVersion;
-    return sessionHolidayDateRange(sessionIds);
+    return sessionHolidayDateRange(sessionIds, {
+      sessionOptions: getSessionOptions(),
+    });
   }, [sessionIds, calendarDataVersion]);
 
   return useMemo(

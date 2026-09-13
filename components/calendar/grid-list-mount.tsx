@@ -59,12 +59,13 @@ export function CalendarGridListMount({
     () => getSnapshot().version,
     () => hydrationServerVersion
   );
-  const holidaysByDate = usePublicHolidaysForSessions(
+  const holidaysByDateAll = usePublicHolidaysForSessions(
     calendarDataSessions,
     showKKT,
     initialPublicHolidaysByYear,
     calendarDataVersion
   );
+  const holidaysByDate = showBreak ? holidaysByDateAll : {};
 
   const sharedViewProps = {
     selectedProgram: calendarDataProgram,
