@@ -699,6 +699,17 @@ function MiniCalendar({ month, year, selectedProgram, selectedSessions, showKKT,
     return dayOfWeek === 0 || dayOfWeek === 6;
   };
   
+  const getDayColor = (day: number | null) => {
+    const activities = getDayActivities(day);
+    const highest = activities[0];
+    if (!highest) return '';
+    if (highest.type === 'lecture') return 'bg-purple-100 dark:bg-purple-900/30';
+    if (highest.type === 'examination') return 'bg-red-100 dark:bg-red-900/30';
+    if (highest.type === 'break') return 'bg-green-100 dark:bg-green-900/30';
+    if (highest.type === 'registration') return 'bg-gray-100 dark:bg-gray-800/30';
+    return '';
+  };
+
   const getRingColor = (day: number | null) => {
     const activities = getDayActivities(day);
     const highest = activities[0];
@@ -857,6 +868,7 @@ function MiniCalendar({ month, year, selectedProgram, selectedSessions, showKKT,
 
           // Always calculate colors - use CSS classes instead of inline styles to prevent hydration mismatch
           // Server and client will render the same HTML with CSS classes
+          const dayColor = getDayColor(day);
           const ringColor = getRingColor(day);
           const borderColor = getCurrentDateBorderColor(day);
           const highlightColor = getDayHighlightColor(day);
@@ -925,7 +937,7 @@ function MiniCalendar({ month, year, selectedProgram, selectedSessions, showKKT,
                 // Keep focus suppression on hover devices only.
                 if (isDesktopHoverMode) e.currentTarget.blur();
               }}
-              className={`calendar-date-cell flex flex-col ${miniCalendarCellFrame} items-center justify-center text-sm font-semibold cursor-pointer transition-none touch-manipulation select-none outline-none focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0 focus:shadow-none focus-visible:shadow-none [&:focus]:ring-0 [&:focus-visible]:ring-0 [&:focus]:shadow-none [&:focus-visible]:shadow-none [&:focus]:outline-none [&:focus-visible]:outline-none ${isHighlighted ? highlightColor : ''} ${isSelected ? `ring-2 ${ringColor}` : ''} ${isCurrentDate(day) && isCurrentDateInRange ? borderColor : 'border border-transparent'} ${textClass}`}
+              className={`calendar-date-cell flex flex-col ${miniCalendarCellFrame} items-center justify-center text-sm font-semibold cursor-pointer transition-none touch-manipulation select-none outline-none focus:outline-none focus-visible:outline-none focus:ring-0 focus-visible:ring-0 focus:shadow-none focus-visible:shadow-none [&:focus]:ring-0 [&:focus-visible]:ring-0 [&:focus]:shadow-none [&:focus-visible]:shadow-none [&:focus]:outline-none [&:focus-visible]:outline-none ${dayColor} ${isHighlighted ? highlightColor : ''} ${isSelected ? `ring-2 ${ringColor}` : ''} ${isCurrentDate(day) && isCurrentDateInRange ? borderColor : 'border border-transparent'} ${textClass}`}
               tabIndex={-1}
               suppressHydrationWarning
             >
