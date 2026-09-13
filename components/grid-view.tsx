@@ -771,53 +771,58 @@ function MiniCalendar({ month, year, selectedProgram, selectedSessions, showKKT,
     return getDayActivities(day).slice(0, 3);
   };
 
+  const getActivityDotColor = (type: ActivityType): string => {
+    if (type === 'registration') return 'bg-[#d1d5db]';
+    if (type === 'lecture') return 'bg-[#8b5cf6]';
+    if (type === 'examination') return 'bg-[#dc2626]';
+    if (type === 'break') return 'bg-[#10b981]';
+    return 'bg-gray-400';
+  };
+
   const getIndicatorDots = (day: number | null) => {
     if (!day) return null;
-    
+
     const priorityActivities = getPriorityActivitiesForDay(day);
     const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
     const dayHolidays = holidaysByDate[dateStr] ?? [];
-    
-    if (priorityActivities.length === 0 && dayHolidays.length === 0) return null;
-    
-    // Show dots for up to 3 highest priority activities, grouped by type
+
     const activityTypeMap = new Map<ActivityType, Activity>();
-    
     for (const activity of priorityActivities) {
-      // Only add one activity per type (the first/highest priority one)
       if (!activityTypeMap.has(activity.type)) {
         activityTypeMap.set(activity.type, activity);
       }
     }
-    
-    const uniqueActivities = Array.from(activityTypeMap.values());
-    const hasBreakDot = uniqueActivities.some((activity) => activity.type === 'break');
-    const showHolidayDot = dayHolidays.length > 0 && !hasBreakDot;
-    
+
+    const dots: Array<{ key: string; color: string }> = [];
+    for (const activity of activityTypeMap.values()) {
+      dots.push({
+        key: `${activity.type}|${activity.name}|${activity.startDate}`,
+        color: getActivityDotColor(activity.type),
+      });
+    }
+
+    const hasBreakDot = activityTypeMap.has('break');
+    if (dayHolidays.length > 0 && !hasBreakDot) {
+      dots.push({
+        key: `${dateStr}-public-holiday`,
+        color: 'bg-[#10b981]',
+      });
+    }
+
+    const visibleDots = dots.slice(0, 3);
+
     return (
-      <div className="flex gap-1 justify-center mt-1 transition-none" style={{ transition: 'none' }}>
-        {uniqueActivities.map((activity) => {
-          let dotColor = 'bg-gray-400';
-          if (activity.type === 'registration') dotColor = 'bg-[#d1d5db]';
-          if (activity.type === 'lecture') dotColor = 'bg-[#8b5cf6]';
-          if (activity.type === 'examination') dotColor = 'bg-[#dc2626]';
-          if (activity.type === 'break') dotColor = 'bg-[#10b981]';
-          
-          return (
-            <div
-              key={activity.name + activity.startDate}
-              className={`h-1.5 w-1.5 rounded-full ${dotColor} transition-none`}
-              style={{ transition: 'none' }}
-            />
-          );
-        })}
-        {showHolidayDot ? (
+      <div
+        className="mt-1 flex h-1.5 min-h-[6px] items-center justify-center gap-1 transition-none"
+        style={{ transition: 'none' }}
+      >
+        {visibleDots.map((dot) => (
           <div
-            key={`${dateStr}-public-holiday`}
-            className="h-1.5 w-1.5 rounded-full bg-[#10b981] transition-none"
+            key={dot.key}
+            className={`h-1.5 w-1.5 rounded-full ${dot.color} transition-none`}
             style={{ transition: 'none' }}
           />
-        ) : null}
+        ))}
       </div>
     );
   };
