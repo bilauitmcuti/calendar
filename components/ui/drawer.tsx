@@ -18,62 +18,20 @@ export const drawerContentClassName = cn(
   "data-[swipe-direction=down]:not-data-ending-style:!h-auto data-[swipe-direction=down]:data-ending-style:!h-(--drawer-height,auto) data-[swipe-direction=down]:min-h-[35dvh] data-[swipe-direction=down]:overflow-y-hidden data-[swipe-direction=down]:overscroll-none"
 )
 
-/**
- * Activity drawer snap points (Base UI: 0–1 = viewport fraction; px/rem strings only).
- * 0.4 ≈ 40dvh (default), 1 = full height (expanded).
- */
-const ACTIVITY_DRAWER_SNAP_POINTS = [0.4, 1] as const
-export { ACTIVITY_DRAWER_SNAP_POINTS }
-export const ACTIVITY_DRAWER_DEFAULT_SNAP = ACTIVITY_DRAWER_SNAP_POINTS[0]
-/** Stable array reference for Drawer.Root (avoid new [] each render). */
-export const ACTIVITY_DRAWER_SNAP_POINTS_LIST: Array<
-  (typeof ACTIVITY_DRAWER_SNAP_POINTS)[number]
-> = [...ACTIVITY_DRAWER_SNAP_POINTS]
-
-/** Short activity lists — same content-fit height model as other drawers (no snap). */
-export const activityDrawerContentFitClassName = cn(
-  drawerContentClassName,
-  "[&_[data-slot=drawer-content]]:overflow-hidden"
-)
-
-/** Long activity lists — snap height (not content-fit / !h-auto). */
+/** Mini calendar activity drawer — fixed 50% viewport; list scrolls inside. */
 export const activityDrawerContentClassName = cn(
   "flex flex-col overflow-hidden",
-  // Stable iOS track: avoid dvh URL-bar jumps while snapped.
-  "data-[swipe-axis=y]:data-snap-points:[--drawer-content-height:100svh]",
-  // Snap open hold is in globals.css (closed transform until data-snap-ready).
+  "data-[swipe-direction=down]:!h-[50dvh]",
+  "data-[swipe-direction=down]:!max-h-[50dvh]",
+  "data-[swipe-direction=down]:!min-h-[50dvh]",
+  "data-[swipe-direction=down]:overflow-y-hidden",
   "[&_[data-slot=drawer-content]]:flex [&_[data-slot=drawer-content]]:min-h-0 [&_[data-slot=drawer-content]]:flex-1",
   "[&_[data-slot=drawer-body-shell]]:flex [&_[data-slot=drawer-body-shell]]:min-h-0 [&_[data-slot=drawer-body-shell]]:flex-1 [&_[data-slot=drawer-body-shell]]:overflow-hidden"
 )
 
-/** Activity drawer body when snapped — header fixed; list scrolls below. */
+/** Activity drawer body — header fixed; list scrolls below. */
 export const activityDrawerBodyClassName =
   "flex min-h-0 flex-1 flex-col overflow-hidden"
-
-/** Optimistic row count: ~3 rows + header usually exceeds 40dvh on phones. */
-export function estimateActivityDrawerNeedsSnap(
-  activityCount: number,
-  hasWeekBadge: boolean
-): boolean {
-  return activityCount + (hasWeekBadge ? 1 : 0) >= 3
-}
-
-/** True when list content would exceed the default snap height (needs scroll + snap). */
-export function activityDrawerContentNeedsSnap(listEl: HTMLElement): boolean {
-  const view = listEl.ownerDocument.defaultView
-  const viewportH = view?.innerHeight || listEl.ownerDocument.documentElement.clientHeight
-  if (viewportH <= 0) return false
-
-  const snapBudget = ACTIVITY_DRAWER_DEFAULT_SNAP * viewportH
-  const body = listEl.closest("[data-grid-activity-drawer-body]") as HTMLElement | null
-  const header = body?.querySelector(
-    '[data-slot="drawer-no-drag"]'
-  ) as HTMLElement | null
-  const headerH = header?.offsetHeight ?? 0
-  // Swipe handle + bottom safe-area padding inside the sheet.
-  const chrome = 64
-  return headerH + listEl.scrollHeight + chrome > snapBudget + 1
-}
 /** Body shell: fit by default; expands only when a DrawerScrollRegion child overflows. */
 export const drawerBodyShellClassName = cn(
   "flex w-full shrink-0 flex-col overflow-y-hidden overscroll-none",

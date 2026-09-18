@@ -9,7 +9,6 @@ import {
   useSyncExternalStore,
 } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import Link from 'next/link';
 import { HugeiconsIcon } from "@hugeicons/react"
 import {
   LeftToRightListBulletIcon,
@@ -62,8 +61,8 @@ import { SessionSubmenuItemLabel } from '@/components/session-submenu-item-label
 import { useEngagementPrompt } from '@/components/engagement-prompt';
 import { usePwaInstalled } from '@/hooks/use-pwa-installed';
 import { SettingsSwitchRow } from '@/components/ui/settings-switch-row';
-import { PwaInstallButton } from '@/components/calendar/pwa-install-hint';
-import { drawerOutlineButtonClassName } from '@/components/ui/drawer';
+import { SettingsMoreMenu } from '@/components/calendar/settings-more-menu';
+import { drawerPrimaryButtonClassName } from '@/components/ui/drawer';
 
 const KKT_FLAG_IMAGES = [
   { src: '/flags/kedah.webp', alt: 'Kedah' },
@@ -128,6 +127,7 @@ export function CalendarControls({
   const router = useRouter();
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
+  const [moreMenuOpen, setMoreMenuOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [activeSubmenu, setActiveSubmenu] = useState<string | null>(null);
   const keepDropdownOpenRef = useRef(false);
@@ -699,18 +699,21 @@ export function CalendarControls({
                   {/* Theme Toggle */}
                   <ThemeToggle />
 
-                  <div className="flex flex-col gap-2 w-full md:flex-row transition-none">
-                    <PwaInstallButton isInstalled={isPWAInstalled} className="md:flex-1" />
-
-                    <Link href="/feedback" className="w-full md:flex-1">
-                      <Button
-                        size="default"
-                        variant="outline"
-                        className={drawerOutlineButtonClassName}
-                      >
-                        Send Feedback
-                      </Button>
-                    </Link>
+                  <div className="flex flex-col gap-2">
+                    <Button
+                      size="default"
+                      variant="default"
+                      className={drawerPrimaryButtonClassName}
+                      onClick={() => {
+                        setIsOpen(false);
+                        setMoreMenuOpen(true);
+                      }}
+                    >
+                      More
+                    </Button>
+                    <p className="text-left text-xs text-muted-foreground">
+                      Not affiliated with UiTM
+                    </p>
                   </div>
                 </div>
               </PopoverContent>
@@ -718,6 +721,12 @@ export function CalendarControls({
           </div>
         </div>
       </div>
+
+      <SettingsMoreMenu
+        open={moreMenuOpen}
+        onOpenChange={setMoreMenuOpen}
+        hideDownload={isPWAInstalled}
+      />
     </div>
   );
 }
