@@ -7,7 +7,6 @@ import { CalendarControls } from '@/components/calendar-controls';
 import { SessionQueryConsumer } from '@/components/session-query-consumer';
 import { ShareUrlSync } from '@/components/share-url-sync';
 import { CalendarGridListMount } from '@/components/calendar/grid-list-mount';
-import { CalendarInternshipFooter } from '@/components/calendar-internship-footer';
 import {
   getRoutePath,
   resolveProgramFromPathAndProps,
@@ -596,7 +595,6 @@ export function SharedCalendarLayout({
           />
         </div>
 
-        <CalendarInternshipFooter />
       </div>
     </div>
     </CalendarDataGate>

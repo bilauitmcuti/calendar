@@ -12,19 +12,14 @@ import {
 } from '@/components/ui/tooltip';
 import {
   KeyboardAwareDrawer,
-  DrawerClose,
   DrawerContent,
   DrawerDescription,
   DrawerTitle,
-  ACTIVITY_DRAWER_DEFAULT_SNAP,
-  ACTIVITY_DRAWER_SNAP_POINTS_LIST,
   activityDrawerContentClassName,
   activityDrawerBodyClassName,
   drawerBodyClassName,
-  drawerPrimaryButtonClassName,
   drawerSafeAreaBottomClassName,
 } from '@/components/ui/drawer';
-import { Button } from '@/components/ui/button';
 import { useCalendarHydrationVersion } from '@/components/calendar-hydration-context';
 import {
   EMPTY_LECTURE_WEEK_BY_SESSION,
@@ -793,6 +788,7 @@ function MiniCalendar({ month, year, selectedProgram, selectedSessions, showKKT,
       }
     }
 
+    const MAX_DOTS = 3;
     const dots: Array<{ key: string; color: string }> = [];
     for (const activity of activityTypeMap.values()) {
       dots.push({
@@ -801,15 +797,17 @@ function MiniCalendar({ month, year, selectedProgram, selectedSessions, showKKT,
       });
     }
 
-    const hasBreakDot = activityTypeMap.has('break');
-    if (dayHolidays.length > 0 && !hasBreakDot) {
-      dots.push({
-        key: `${dateStr}-public-holiday`,
-        color: 'bg-[#10b981]',
-      });
+    const holidaySlots = MAX_DOTS - dots.length;
+    if (holidaySlots > 0 && dayHolidays.length > 0) {
+      for (const holiday of dayHolidays.slice(0, holidaySlots)) {
+        dots.push({
+          key: `${dateStr}-public-holiday|${holiday.id}`,
+          color: 'bg-[#10b981]',
+        });
+      }
     }
 
-    const visibleDots = dots.slice(0, 3);
+    const visibleDots = dots;
 
     return (
       <div
@@ -1000,9 +998,6 @@ export const GridView = memo(function GridView({
     [storeLectureWeekBySession, selectedSessions, initialLectureWeekByDate]
   );
   const [drawerDateKey, setDrawerDateKey] = useState<string | null>(null);
-  const [activitySnapPoint, setActivitySnapPoint] = useState<number | string | null>(
-    ACTIVITY_DRAWER_DEFAULT_SNAP
-  );
   const drawerListScrollElRef = useRef<HTMLDivElement | null>(null);
   const [drawerCurrentDateStr, setDrawerCurrentDateStr] = useState<string | null>(initialCurrentDate ?? null);
   const drawerSwipeGestureRef = useRef<{
@@ -1032,7 +1027,6 @@ export const GridView = memo(function GridView({
   }, []);
 
   const handleOpenActivityDrawer = (dateStr: string) => {
-    setActivitySnapPoint(ACTIVITY_DRAWER_DEFAULT_SNAP);
     setDrawerDateKey(dateStr);
     setSelectedDate(dateStr);
     recordEngagementAction('grid_cell_open');
@@ -1354,11 +1348,6 @@ export const GridView = memo(function GridView({
         onOpenChange={(open) => {
           if (!open) setDrawerDateKey(null);
         }}
-        snapPoints={ACTIVITY_DRAWER_SNAP_POINTS_LIST}
-        snapPoint={activitySnapPoint}
-        onSnapPointChange={(point: number | string | null) => {
-          setActivitySnapPoint(point);
-        }}
       >
         <DrawerContent className={activityDrawerContentClassName}>
           <div
@@ -1385,7 +1374,10 @@ export const GridView = memo(function GridView({
                 </div>
                 <ActivityDrawerAnimatedSection
                   animateKey={`${drawerDateKey}-${drawerActivities.length}-${lectureWeekByDate?.get(drawerDateKey) ?? 'none'}`}
-                  className="w-full min-w-0 max-w-full px-4"
+                  className={cn(
+                    'w-full min-w-0 max-w-full px-4',
+                    drawerSafeAreaBottomClassName
+                  )}
                 >
                   <GridDayActivitiesPanel
                     dateStr={drawerDateKey}
@@ -1401,22 +1393,6 @@ export const GridView = memo(function GridView({
                     holidays={holidaysByDate[drawerDateKey] ?? []}
                   />
                 </ActivityDrawerAnimatedSection>
-                <div
-                  data-slot="drawer-no-drag"
-                  data-base-ui-swipe-ignore=""
-                  className={cn('w-full shrink-0 px-4', drawerSafeAreaBottomClassName)}
-                >
-                  <DrawerClose
-                    render={
-                      <Button
-                        type="button"
-                        className={drawerPrimaryButtonClassName}
-                      />
-                    }
-                  >
-                    Close
-                  </DrawerClose>
-                </div>
               </>
             ) : null}
           </div>
