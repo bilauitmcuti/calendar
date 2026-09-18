@@ -12,17 +12,14 @@ import {
 } from '@/components/ui/tooltip';
 import {
   KeyboardAwareDrawer,
-  DrawerClose,
   DrawerContent,
   DrawerDescription,
   DrawerTitle,
   activityDrawerContentClassName,
   activityDrawerBodyClassName,
   drawerBodyClassName,
-  drawerPrimaryButtonClassName,
   drawerSafeAreaBottomClassName,
 } from '@/components/ui/drawer';
-import { Button } from '@/components/ui/button';
 import { useCalendarHydrationVersion } from '@/components/calendar-hydration-context';
 import {
   EMPTY_LECTURE_WEEK_BY_SESSION,
@@ -1377,7 +1374,10 @@ export const GridView = memo(function GridView({
                 </div>
                 <ActivityDrawerAnimatedSection
                   animateKey={`${drawerDateKey}-${drawerActivities.length}-${lectureWeekByDate?.get(drawerDateKey) ?? 'none'}`}
-                  className="w-full min-w-0 max-w-full px-4"
+                  className={cn(
+                    'w-full min-w-0 max-w-full px-4',
+                    drawerSafeAreaBottomClassName
+                  )}
                 >
                   <GridDayActivitiesPanel
                     dateStr={drawerDateKey}
@@ -1393,22 +1393,6 @@ export const GridView = memo(function GridView({
                     holidays={holidaysByDate[drawerDateKey] ?? []}
                   />
                 </ActivityDrawerAnimatedSection>
-                <div
-                  data-slot="drawer-no-drag"
-                  data-base-ui-swipe-ignore=""
-                  className={cn('w-full shrink-0 px-4', drawerSafeAreaBottomClassName)}
-                >
-                  <DrawerClose
-                    render={
-                      <Button
-                        type="button"
-                        className={drawerPrimaryButtonClassName}
-                      />
-                    }
-                  >
-                    Close
-                  </DrawerClose>
-                </div>
               </>
             ) : null}
           </div>
