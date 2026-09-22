@@ -163,8 +163,21 @@ Client code uses [`lib/zaraz.ts`](lib/zaraz.ts) (`trackZarazEvent`, `ZARAZ_EVENT
 | `engagementRating` | `engagement_rating` | Star rating submitted |
 | `engagementShare` | `engagement_share` | Share/copy link from prompt |
 | `engagementFeedbackClick` | `engagement_feedback_click` | User taps “Send feedback” in prompt |
+| `selectProgram` | `select_program` | User selects a program |
+| `selectSession` | `select_session` | User toggles a session |
+| `viewCalendarDate` | `view_calendar_date` | User opens a calendar day (drawer) |
+| `navigateCalendarDay` | `navigate_calendar_day` | User moves to prev/next day in drawer |
+| `changeViewMode` | `change_view_mode` | User switches grid ↔ list |
+| `toggleCalendarFilter` | `toggle_calendar_filter` | User toggles an activity filter |
+| `openSettings` | `open_settings` | User opens settings popover |
+| `openChat` | `open_chat` | User taps Chat |
+| `openDownload` | `open_download` | User opens Download (settings or PWA hint) |
+| `openFeedback` | `open_feedback` | User opens Feedback (settings or engagement prompt) |
+| `copyShareLink` | `copy_share_link` | User copies share link on Download page |
 
 With **Events** automatic action enabled on the GA4 tool, these appear in GA4 without extra trigger configuration.
+
+**GA4 custom dimensions** (Admin → Custom definitions): register event-scoped dimensions for `program`, `program_group`, `session_id`, `session_ids`, `date`, `view`, `filter_key`, `source`, `action`, `from`, `to`, `direction`, `path` so Explorations can report top programs, sessions, and dates.
 
 ## Known Limitations
 

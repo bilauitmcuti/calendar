@@ -46,6 +46,7 @@ import {
 } from '@/lib/route-utils';
 import { copyTextToClipboard } from '@/lib/web-share';
 import { cn } from '@/lib/utils';
+import { trackZarazEvent, ZARAZ_EVENTS } from '@/lib/zaraz';
 
 const FALLBACK_META: MetaResponse = {
   defaultSession: { ...FALLBACK_DEFAULT_SESSION_MAP },
@@ -334,11 +335,16 @@ export function ShareLinkGenerator() {
     if (ok) {
       setCopied(true);
       toast.success('Link copied');
+      trackZarazEvent(ZARAZ_EVENTS.copyShareLink, {
+        program: selectedProgram,
+        session_ids: selectedSessions.join(','),
+        path: sharePath,
+      });
       window.setTimeout(() => setCopied(false), 2000);
     } else {
       toast.error('Could not copy link');
     }
-  }, [sharePath]);
+  }, [sharePath, selectedProgram, selectedSessions]);
 
   return (
     <div className="flex flex-col gap-4 rounded-xl bg-card p-4 text-sm text-card-foreground shadow-xs ring-1 ring-border">
