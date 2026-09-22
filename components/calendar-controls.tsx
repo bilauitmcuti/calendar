@@ -214,8 +214,8 @@ export function CalendarControls({
     ];
     trackZarazEvent(ZARAZ_EVENTS.selectSession, {
       program: programValue,
-      session_id: sessionId,
-      session_ids: nextSessionIds.join(','),
+      calendar_session_id: sessionId,
+      calendar_session_ids: nextSessionIds.join(','),
       action: isSelected ? 'remove' : 'add',
     });
   }, [onProgramSessionChange, selectedSessions, pathname, viewMode, recordEngagementAction]);

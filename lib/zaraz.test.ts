@@ -76,14 +76,14 @@ describe("zaraz", () => {
     trackZarazEvent(ZARAZ_EVENTS.viewCalendarDate, {
       date: "2026-03-15",
       program: "Degree",
-      session_ids: "B-20262,B-20264",
+      calendar_session_ids: "B-20262,B-20264",
       view: "grid",
     });
 
     expect(track).toHaveBeenCalledWith("view_calendar_date", {
       date: "2026-03-15",
       program: "Degree",
-      session_ids: "B-20262,B-20264",
+      calendar_session_ids: "B-20262,B-20264",
       view: "grid",
     });
   });

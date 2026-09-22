@@ -4,7 +4,8 @@ export const GA_MEASUREMENT_ID = "G-D94Q17TQ22";
 /**
  * Event names sent via zaraz.track() → GA4 (enable Events automatic action).
  * Calendar events (P0–P2): register params as GA4 custom dimensions — program,
- * program_group, session_id, session_ids, date, view, filter_key, source, action,
+ * program_group, calendar_session_id, calendar_session_ids, date, view, filter_key,
+ * source, action,
  * from, to, direction, path.
  */
 export const ZARAZ_EVENTS = {
