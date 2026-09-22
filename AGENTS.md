@@ -177,7 +177,7 @@ Client code uses [`lib/zaraz.ts`](lib/zaraz.ts) (`trackZarazEvent`, `ZARAZ_EVENT
 
 With **Events** automatic action enabled on the GA4 tool, these appear in GA4 without extra trigger configuration.
 
-**GA4 custom dimensions** (Admin → Custom definitions): register event-scoped dimensions for `program`, `program_group`, `session_id`, `session_ids`, `date`, `view`, `filter_key`, `source`, `action`, `from`, `to`, `direction`, `path` so Explorations can report top programs, sessions, and dates.
+**GA4 custom dimensions** (Admin → Custom definitions): register event-scoped dimensions for `program`, `program_group`, `calendar_session_id`, `calendar_session_ids`, `date`, `view`, `filter_key`, `source`, `action`, `from`, `to`, `direction`, `path` so Explorations can report top programs, sessions, and dates. Do not use `session_id` — GA4 reserves that name.
 
 ## Known Limitations
 

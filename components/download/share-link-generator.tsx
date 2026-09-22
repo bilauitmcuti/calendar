@@ -337,7 +337,7 @@ export function ShareLinkGenerator() {
       toast.success('Link copied');
       trackZarazEvent(ZARAZ_EVENTS.copyShareLink, {
         program: selectedProgram,
-        session_ids: selectedSessions.join(','),
+        calendar_session_ids: selectedSessions.join(','),
         path: sharePath,
       });
       window.setTimeout(() => setCopied(false), 2000);

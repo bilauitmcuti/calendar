@@ -1034,7 +1034,7 @@ export const GridView = memo(function GridView({
     trackZarazEvent(ZARAZ_EVENTS.viewCalendarDate, {
       date: dateStr,
       program: selectedProgram,
-      session_ids: selectedSessions.join(','),
+      calendar_session_ids: selectedSessions.join(','),
       view: 'grid',
     });
   };
@@ -1189,7 +1189,7 @@ export const GridView = memo(function GridView({
       date: nextKey,
       direction: delta === 1 ? 'next' : 'prev',
       program: selectedProgram,
-      session_ids: selectedSessions.join(','),
+      calendar_session_ids: selectedSessions.join(','),
     });
   };
 
