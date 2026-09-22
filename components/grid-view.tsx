@@ -32,6 +32,7 @@ import { formatHolidayStates } from '@/lib/public-holidays-for-view';
 import { resolveLectureWeekMapForSessions } from '@/lib/lecture-weeks-resolve';
 import { useMobileViewport } from '@/lib/use-mobile-viewport';
 import { useEngagementPrompt } from '@/components/engagement-prompt';
+import { trackZarazEvent, ZARAZ_EVENTS } from '@/lib/zaraz';
 
 interface TooltipActivityListProps {
   dateKey: string;
@@ -1030,6 +1031,12 @@ export const GridView = memo(function GridView({
     setDrawerDateKey(dateStr);
     setSelectedDate(dateStr);
     recordEngagementAction('grid_cell_open');
+    trackZarazEvent(ZARAZ_EVENTS.viewCalendarDate, {
+      date: dateStr,
+      program: selectedProgram,
+      session_ids: selectedSessions.join(','),
+      view: 'grid',
+    });
   };
 
   useEffect(() => {
@@ -1178,6 +1185,12 @@ export const GridView = memo(function GridView({
     setDrawerDateKey(nextKey);
     setSelectedDate(nextKey);
     recordEngagementAction('grid_drawer_nav');
+    trackZarazEvent(ZARAZ_EVENTS.navigateCalendarDay, {
+      date: nextKey,
+      direction: delta === 1 ? 'next' : 'prev',
+      program: selectedProgram,
+      session_ids: selectedSessions.join(','),
+    });
   };
 
   const navigateDrawerActivityDateRef = useRef(navigateDrawerActivityDate);

@@ -1,13 +1,29 @@
 /** Configure in Cloudflare dashboard → Zaraz → Google Analytics 4. */
 export const GA_MEASUREMENT_ID = "G-D94Q17TQ22";
 
-/** Event names sent via zaraz.track() → GA4 (enable Events automatic action). */
+/**
+ * Event names sent via zaraz.track() → GA4 (enable Events automatic action).
+ * Calendar events (P0–P2): register params as GA4 custom dimensions — program,
+ * program_group, session_id, session_ids, date, view, filter_key, source, action,
+ * from, to, direction, path.
+ */
 export const ZARAZ_EVENTS = {
   pageview: "Pageview",
   engagementPromptShown: "engagement_prompt_shown",
   engagementRating: "engagement_rating",
   engagementShare: "engagement_share",
   engagementFeedbackClick: "engagement_feedback_click",
+  selectProgram: "select_program",
+  selectSession: "select_session",
+  viewCalendarDate: "view_calendar_date",
+  navigateCalendarDay: "navigate_calendar_day",
+  changeViewMode: "change_view_mode",
+  toggleCalendarFilter: "toggle_calendar_filter",
+  openSettings: "open_settings",
+  openChat: "open_chat",
+  openDownload: "open_download",
+  openFeedback: "open_feedback",
+  copyShareLink: "copy_share_link",
 } as const;
 
 type ZarazEventName = (typeof ZARAZ_EVENTS)[keyof typeof ZARAZ_EVENTS];

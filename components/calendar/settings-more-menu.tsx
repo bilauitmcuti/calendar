@@ -12,6 +12,7 @@ import {
 } from "@hugeicons/core-free-icons";
 import { ResponsiveOverlayShell } from "@/components/ui/responsive-overlay-shell";
 import { usePhoneViewport } from "@/lib/use-mobile-viewport";
+import { trackZarazEvent, ZARAZ_EVENTS } from "@/lib/zaraz";
 
 const MCP_PAGE_PATH = "/mcp";
 const MORE_MENU_TITLE = "Quick links";
@@ -28,6 +29,7 @@ interface MoreLinkItem {
   label: string;
   href: string;
   icon: typeof Download03Icon;
+  onClick?: () => void;
 }
 
 interface SettingsMoreMenuProps {
@@ -41,6 +43,7 @@ function MoreLinkTile({
   href,
   icon,
   layout,
+  onClick,
 }: MoreLinkItem & { layout: "grid" | "list" }) {
   const isList = layout === "list";
 
@@ -49,6 +52,7 @@ function MoreLinkTile({
       href={href}
       target="_blank"
       rel="noopener noreferrer"
+      onClick={onClick}
       className={isList ? moreMenuListTileClassName : moreMenuGridTileClassName}
     >
       <HugeiconsIcon icon={icon} strokeWidth={2} className="size-5 shrink-0" />
@@ -75,6 +79,9 @@ export function SettingsMoreMenu({
         label: "Download",
         href: "/download",
         icon: Download03Icon,
+        onClick: () => {
+          trackZarazEvent(ZARAZ_EVENTS.openDownload, { source: "settings" });
+        },
       });
     }
 
@@ -83,6 +90,9 @@ export function SettingsMoreMenu({
         label: "Feedback",
         href: "/feedback",
         icon: Message01Icon,
+        onClick: () => {
+          trackZarazEvent(ZARAZ_EVENTS.openFeedback, { source: "settings" });
+        },
       },
       {
         label: "MCP Server",

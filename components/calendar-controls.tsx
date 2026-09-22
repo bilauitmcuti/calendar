@@ -63,6 +63,8 @@ import { usePwaInstalled } from '@/hooks/use-pwa-installed';
 import { SettingsSwitchRow } from '@/components/ui/settings-switch-row';
 import { SettingsMoreMenu } from '@/components/calendar/settings-more-menu';
 import { drawerPrimaryButtonClassName } from '@/components/ui/drawer';
+import { getGroupFromProgram } from '@/lib/session-memory';
+import { trackZarazEvent, ZARAZ_EVENTS } from '@/lib/zaraz';
 
 const KKT_FLAG_IMAGES = [
   { src: '/flags/kedah.webp', alt: 'Kedah' },
@@ -148,11 +150,16 @@ export function CalendarControls({
   }, []);
 
   const onFilterToggle = useCallback(
-    (checked: boolean, handler: (value: boolean) => void) => {
+    (filterKey: string, checked: boolean, handler: (value: boolean) => void) => {
       handler(checked);
       recordEngagementAction('filter_toggle');
+      trackZarazEvent(ZARAZ_EVENTS.toggleCalendarFilter, {
+        filter_key: filterKey,
+        enabled: checked,
+        program: selectedProgram,
+      });
     },
-    [recordEngagementAction]
+    [recordEngagementAction, selectedProgram]
   );
 
   const hydrationServerVersion = useCalendarHydrationVersion();
@@ -201,6 +208,16 @@ export function CalendarControls({
       }
     }
     recordEngagementAction('session_change');
+    const nextSessionIds = [
+      ...selectedSessions.filter((id) => !id.startsWith(`${group}-`)),
+      ...next,
+    ];
+    trackZarazEvent(ZARAZ_EVENTS.selectSession, {
+      program: programValue,
+      session_id: sessionId,
+      session_ids: nextSessionIds.join(','),
+      action: isSelected ? 'remove' : 'add',
+    });
   }, [onProgramSessionChange, selectedSessions, pathname, viewMode, recordEngagementAction]);
 
   // Switch program only (parent resolves sessions from sessionsByProgram)
@@ -214,6 +231,10 @@ export function CalendarControls({
       }
     }
     recordEngagementAction('program_change');
+    trackZarazEvent(ZARAZ_EVENTS.selectProgram, {
+      program,
+      program_group: getGroupFromProgram(program),
+    });
   }, [onProgramSessionChange, pathname, viewMode, recordEngagementAction]);
 
   // Handle view mode change - use callback if provided (client state, no appear effect), else router
@@ -227,8 +248,13 @@ export function CalendarControls({
         router.replace(newPath, { scroll: false });
       }
       recordEngagementAction('view_mode_change');
+      trackZarazEvent(ZARAZ_EVENTS.changeViewMode, {
+        from: viewMode,
+        to: newViewMode,
+        program: selectedProgram,
+      });
     },
-    [onViewModeChange, router, selectedProgram, recordEngagementAction]
+    [onViewModeChange, router, selectedProgram, viewMode, recordEngagementAction]
   );
 
   // Memoize filtered program options to avoid recalculation
@@ -577,6 +603,9 @@ export function CalendarControls({
               nativeButton={false}
               onPointerEnter={prefetchChatDocument}
               onFocus={prefetchChatDocument}
+              onClick={() => {
+                trackZarazEvent(ZARAZ_EVENTS.openChat, { program: selectedProgram });
+              }}
               className={`${iconBaseClass} ${iconInactiveClass}`}
               title="Chat"
               suppressHydrationWarning
@@ -585,7 +614,10 @@ export function CalendarControls({
             </Button>
             <Popover open={isOpen} onOpenChange={(open) => {
               setIsOpen(open);
-              if (open) recordEngagementAction('settings_open');
+              if (open) {
+                recordEngagementAction('settings_open');
+                trackZarazEvent(ZARAZ_EVENTS.openSettings);
+              }
             }}>
               <PopoverTrigger
                 render={
@@ -613,14 +645,14 @@ export function CalendarControls({
                     <SettingsSwitchRow
                       label="Registration"
                       checked={showRegistration}
-                      onChange={(checked) => onFilterToggle(checked, onShowRegistrationChange)}
+                      onChange={(checked) => onFilterToggle('registration', checked, onShowRegistrationChange)}
                       ariaLabel="Toggle registration events"
                     />
 
                     <SettingsSwitchRow
                       label="Lecture"
                       checked={showLecture}
-                      onChange={(checked) => onFilterToggle(checked, onShowLectureChange)}
+                      onChange={(checked) => onFilterToggle('lecture', checked, onShowLectureChange)}
                       ariaLabel="Toggle lecture events"
                     />
 
@@ -628,7 +660,7 @@ export function CalendarControls({
                     <SettingsSwitchRow
                       label="Short Semester"
                       checked={showSemesterPendek}
-                      onChange={(checked) => onFilterToggle(checked, onShowSemesterPendekChange)}
+                      onChange={(checked) => onFilterToggle('semester_pendek', checked, onShowSemesterPendekChange)}
                       nested
                       ariaLabel="Toggle Short Semester events"
                     />
@@ -638,7 +670,7 @@ export function CalendarControls({
                     <SettingsSwitchRow
                       label="Intersession Classes"
                       checked={showKuliahIntersesi}
-                      onChange={(checked) => onFilterToggle(checked, onShowKuliahIntersesiChange)}
+                      onChange={(checked) => onFilterToggle('kuliah_intersesi', checked, onShowKuliahIntersesiChange)}
                       nested
                       ariaLabel="Toggle Intersession Classes events"
                     />
@@ -647,7 +679,7 @@ export function CalendarControls({
                     <SettingsSwitchRow
                       label="Examination"
                       checked={showExamination}
-                      onChange={(checked) => onFilterToggle(checked, onShowExaminationChange)}
+                      onChange={(checked) => onFilterToggle('examination', checked, onShowExaminationChange)}
                       ariaLabel="Toggle examination events"
                     />
 
@@ -655,7 +687,7 @@ export function CalendarControls({
                     <SettingsSwitchRow
                       label="Others Exams"
                       checked={showOthersExams}
-                      onChange={(checked) => onFilterToggle(checked, onShowOthersExamsChange)}
+                      onChange={(checked) => onFilterToggle('others_exams', checked, onShowOthersExamsChange)}
                       nested
                       ariaLabel="Toggle others exams events"
                     />
@@ -664,7 +696,7 @@ export function CalendarControls({
                     <SettingsSwitchRow
                       label="Breaks & Holidays"
                       checked={showBreak}
-                      onChange={(checked) => onFilterToggle(checked, onShowBreakChange)}
+                      onChange={(checked) => onFilterToggle('break', checked, onShowBreakChange)}
                       ariaLabel="Toggle break events"
                     />
                   </div>
@@ -691,7 +723,7 @@ export function CalendarControls({
                       </>
                     }
                     checked={showKKT}
-                    onChange={(checked) => onFilterToggle(checked, onShowKKTChange)}
+                    onChange={(checked) => onFilterToggle('kkt', checked, onShowKKTChange)}
                     ariaLabel="Toggle Kedah, Kelantan, and Terengganu regional holidays"
                   />
                   )}

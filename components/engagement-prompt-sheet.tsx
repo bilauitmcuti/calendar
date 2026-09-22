@@ -367,6 +367,7 @@ export function EngagementPromptSheet({
   const handleFeedback = useCallback(() => {
     clearHighRatingCloseTimer();
     trackZarazEvent(ZARAZ_EVENTS.engagementFeedbackClick);
+    trackZarazEvent(ZARAZ_EVENTS.openFeedback, { source: "engagement_prompt" });
     onFeedbackComplete();
     router.push("/feedback");
   }, [clearHighRatingCloseTimer, onFeedbackComplete, router]);

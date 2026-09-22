@@ -53,4 +53,38 @@ describe("zaraz", () => {
 
     expect(track).toHaveBeenCalledWith("Pageview", { path: "/about" });
   });
+
+  it("forwards calendar program selection events", () => {
+    const track = vi.fn().mockResolvedValue(undefined);
+    window.zaraz = { track };
+
+    trackZarazEvent(ZARAZ_EVENTS.selectProgram, {
+      program: "Degree",
+      program_group: "B",
+    });
+
+    expect(track).toHaveBeenCalledWith("select_program", {
+      program: "Degree",
+      program_group: "B",
+    });
+  });
+
+  it("forwards calendar date view events", () => {
+    const track = vi.fn().mockResolvedValue(undefined);
+    window.zaraz = { track };
+
+    trackZarazEvent(ZARAZ_EVENTS.viewCalendarDate, {
+      date: "2026-03-15",
+      program: "Degree",
+      session_ids: "B-20262,B-20264",
+      view: "grid",
+    });
+
+    expect(track).toHaveBeenCalledWith("view_calendar_date", {
+      date: "2026-03-15",
+      program: "Degree",
+      session_ids: "B-20262,B-20264",
+      view: "grid",
+    });
+  });
 });
