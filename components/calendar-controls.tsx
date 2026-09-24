@@ -73,11 +73,6 @@ const KKT_FLAG_IMAGES = [
   { src: '/flags/terengganu.webp', alt: 'Terengganu', hint: 'Keropok Lekor 🐟' },
 ] as const;
 
-function stopLabelToggle(event: React.SyntheticEvent) {
-  event.preventDefault();
-  event.stopPropagation();
-}
-
 function KktFlagHint({ flag }: { flag: (typeof KKT_FLAG_IMAGES)[number] }) {
   return (
     <IconHint
@@ -87,8 +82,6 @@ function KktFlagHint({ flag }: { flag: (typeof KKT_FLAG_IMAGES)[number] }) {
           type="button"
           aria-label={flag.alt}
           className="inline-flex size-5 shrink-0 items-center justify-center rounded-full p-0"
-          onPointerDown={stopLabelToggle}
-          onClick={stopLabelToggle}
         />
       }
     >
