@@ -826,7 +826,7 @@ function MiniCalendar({ month, year, selectedProgram, selectedSessions, showKKT,
     );
   };
 
-  const weekDays = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'];
+  const weekDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
   // Theme-aware classes
   const textClass = 'text-foreground';
   const mutedClass = 'text-muted-foreground';
@@ -1333,7 +1333,8 @@ export const GridView = memo(function GridView({
             anchor={tooltipAnchorRef}
             data-mini-calendar-tooltip={activeTooltipData.dateStr}
             side="top"
-            className="flex w-auto max-w-[300px] flex-col items-start gap-2 overflow-hidden px-3 py-2 sm:max-w-[330px] mx-2 rounded-lg shadow-lg border border-border bg-popover text-popover-foreground"
+            showArrow={false}
+            className="flex w-auto max-w-[300px] flex-col items-start gap-2 overflow-hidden px-3 py-2 sm:max-w-[330px] mx-2 rounded-lg border border-border bg-popover text-popover-foreground shadow-lg"
             sideOffset={8}
             collisionPadding={12}
             style={

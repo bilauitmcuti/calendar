@@ -61,16 +61,44 @@ import { SessionSubmenuItemLabel } from '@/components/session-submenu-item-label
 import { useEngagementPrompt } from '@/components/engagement-prompt';
 import { usePwaInstalled } from '@/hooks/use-pwa-installed';
 import { SettingsSwitchRow } from '@/components/ui/settings-switch-row';
+import { IconHint } from '@/components/ui/icon-hint';
 import { SettingsMoreMenu } from '@/components/calendar/settings-more-menu';
 import { drawerPrimaryButtonClassName } from '@/components/ui/drawer';
 import { getGroupFromProgram } from '@/lib/session-memory';
 import { trackZarazEvent, ZARAZ_EVENTS } from '@/lib/zaraz';
 
 const KKT_FLAG_IMAGES = [
-  { src: '/flags/kedah.webp', alt: 'Kedah' },
-  { src: '/flags/kelantan.webp', alt: 'Kelantan' },
-  { src: '/flags/terengganu.webp', alt: 'Terengganu' },
+  { src: '/flags/kedah.webp', alt: 'Kedah', hint: 'Laksa Kedah 🍜' },
+  { src: '/flags/kelantan.webp', alt: 'Kelantan', hint: 'Nasi Kerabu 💙' },
+  { src: '/flags/terengganu.webp', alt: 'Terengganu', hint: 'Keropok Lekor 🐟' },
 ] as const;
+
+function KktFlagHint({ flag }: { flag: (typeof KKT_FLAG_IMAGES)[number] }) {
+  return (
+    <IconHint
+      label={flag.hint}
+      trigger={
+        <button
+          type="button"
+          aria-label={flag.alt}
+          className="inline-flex size-5 shrink-0 items-center justify-center rounded-full p-0"
+        />
+      }
+    >
+      <img
+        src={flag.src}
+        alt=""
+        width={20}
+        height={20}
+        draggable={false}
+        decoding="async"
+        aria-hidden
+        className="size-5 rounded-full object-cover"
+      />
+    </IconHint>
+  );
+}
+
 interface CalendarControlsProps {
   selectedProgram: string;
   selectedSessions: SessionId[];
@@ -576,42 +604,58 @@ export function CalendarControls({
             suppressHydrationWarning
             style={{ transition: 'none' }}
           >
-            <Button
-              variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
-              size="icon"
-              onClick={() => handleViewModeChange('grid')}
-              className={`${iconBaseClass} ${viewMode === 'grid' ? iconActiveClass : iconInactiveClass}`}
-              title="Grid View"
-              suppressHydrationWarning
+            <IconHint
+              label="Grid view"
+              trigger={
+                <Button
+                  variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
+                  size="icon"
+                  onClick={() => handleViewModeChange('grid')}
+                  aria-label="Grid view"
+                  className={`${iconBaseClass} ${viewMode === 'grid' ? iconActiveClass : iconInactiveClass}`}
+                  suppressHydrationWarning
+                />
+              }
             >
               <HugeiconsIcon icon={Calendar04Icon} strokeWidth={2} className="h-6 w-6" />
-            </Button>
-            <Button
-              variant={viewMode === 'list' ? 'secondary' : 'ghost'}
-              size="icon"
-              onClick={() => handleViewModeChange('list')}
-              className={`${iconBaseClass} ${viewMode === 'list' ? iconActiveClass : iconInactiveClass}`}
-              title="List View"
-              suppressHydrationWarning
+            </IconHint>
+            <IconHint
+              label="List view"
+              trigger={
+                <Button
+                  variant={viewMode === 'list' ? 'secondary' : 'ghost'}
+                  size="icon"
+                  onClick={() => handleViewModeChange('list')}
+                  aria-label="List view"
+                  className={`${iconBaseClass} ${viewMode === 'list' ? iconActiveClass : iconInactiveClass}`}
+                  suppressHydrationWarning
+                />
+              }
             >
               <HugeiconsIcon icon={LeftToRightListBulletIcon} strokeWidth={2} className="h-6 w-6" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              render={<a href="/chat" />}
+            </IconHint>
+            <IconHint
+              label="Chat"
               nativeButton={false}
-              onPointerEnter={prefetchChatDocument}
-              onFocus={prefetchChatDocument}
-              onClick={() => {
-                trackZarazEvent(ZARAZ_EVENTS.openChat, { program: selectedProgram });
-              }}
-              className={`${iconBaseClass} ${iconInactiveClass}`}
-              title="Chat"
-              suppressHydrationWarning
+              trigger={
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  render={<a href="/chat" />}
+                  nativeButton={false}
+                  onPointerEnter={prefetchChatDocument}
+                  onFocus={prefetchChatDocument}
+                  onClick={() => {
+                    trackZarazEvent(ZARAZ_EVENTS.openChat, { program: selectedProgram });
+                  }}
+                  aria-label="Chat"
+                  className={`${iconBaseClass} ${iconInactiveClass}`}
+                  suppressHydrationWarning
+                />
+              }
             >
               <HugeiconsIcon icon={Message01Icon} strokeWidth={2} className="h-6 w-6" />
-            </Button>
+            </IconHint>
             <Popover open={isOpen} onOpenChange={(open) => {
               setIsOpen(open);
               if (open) {
@@ -619,19 +663,26 @@ export function CalendarControls({
                 trackZarazEvent(ZARAZ_EVENTS.openSettings);
               }
             }}>
-              <PopoverTrigger
-                render={
-                  <Button
-                    variant={isOpen ? 'secondary' : 'ghost'}
-                    size="icon"
-                    className={`${iconBaseClass} ${isOpen ? iconActiveClass : iconInactiveClass}`}
-                    title="Settings"
-                    suppressHydrationWarning
+              <IconHint
+                label="Settings"
+                disabled={isOpen}
+                hintOnTouch={false}
+                trigger={
+                  <PopoverTrigger
+                    render={
+                      <Button
+                        variant={isOpen ? 'secondary' : 'ghost'}
+                        size="icon"
+                        aria-label="Settings"
+                        className={`${iconBaseClass} ${isOpen ? iconActiveClass : iconInactiveClass}`}
+                        suppressHydrationWarning
+                      />
+                    }
                   />
                 }
               >
                 <HugeiconsIcon icon={Settings01Icon} strokeWidth={2} className="h-6 w-6" />
-              </PopoverTrigger>
+              </IconHint>
               <PopoverContent 
                 className="h-auto w-[260px] sm:w-[300px] gap-3 pt-4 pb-4 pl-3 pr-3 z-50 bg-popover dark:bg-[#2A2A2A] transition-none"
                 side="bottom"
@@ -706,18 +757,9 @@ export function CalendarControls({
                     label={
                       <>
                         <span className="text-sm font-medium text-foreground">Show</span>
-                        <div className="flex gap-1 pointer-events-none select-none">
+                        <div className="flex gap-1">
                           {KKT_FLAG_IMAGES.map((flag) => (
-                            <img
-                              key={flag.src}
-                              src={flag.src}
-                              alt={flag.alt}
-                              width={20}
-                              height={20}
-                              draggable={false}
-                              decoding="async"
-                              className="size-5 rounded-full object-cover"
-                            />
+                            <KktFlagHint key={flag.src} flag={flag} />
                           ))}
                         </div>
                       </>
