@@ -1,6 +1,6 @@
 'use client';
 
-import type { ReactNode } from 'react';
+import { useId, type ReactNode } from 'react';
 
 interface SettingsSwitchRowProps {
   label: ReactNode;
@@ -23,8 +23,11 @@ export function SettingsSwitchRow({
   kbd,
   interactive = true,
 }: SettingsSwitchRowProps) {
+  const inputId = useId();
+
   return (
     <label
+      htmlFor={interactive ? inputId : undefined}
       className={`flex items-center justify-between cursor-pointer py-0.5${nested ? ' pl-4' : ''}`}
     >
       <div className="flex items-center gap-2">
@@ -51,6 +54,7 @@ export function SettingsSwitchRow({
         />
         {interactive ? (
           <input
+            id={inputId}
             type="checkbox"
             role="switch"
             checked={checked}
