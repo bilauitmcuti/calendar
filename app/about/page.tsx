@@ -9,7 +9,6 @@ import { ArrowLeft01Icon } from "@hugeicons/core-free-icons";
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { BrandName } from '@/components/brand-name';
-
 const programsText =
   'Foundation/Professional, Pre-Diploma, Diploma, Diploma (Part-Time), Bachelor, Bachelor (Part-Time), Master, and PhD.';
 
@@ -120,6 +119,9 @@ export default function AboutPage() {
           </p>
 
           <h2>Terms and conditions</h2>
+          <p>
+            Terms and Conditions and the Privacy Policy are set out below.
+          </p>
           <p>
             By accessing or using <BrandName /> (the website, Progressive Web App, AI Chat, Find My Internship,
             feedback tools, and related pages), you agree to these terms. If you do not agree, please stop using the
