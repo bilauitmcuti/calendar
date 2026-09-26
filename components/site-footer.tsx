@@ -1,8 +1,3 @@
-import Link from "next/link";
-import { SITE_ORIGIN } from "@/lib/page-seo";
-
-const INTERNSHIP_URL = `${SITE_ORIGIN}/internship`;
-
 export function SiteFooter() {
   return (
     <footer
@@ -14,12 +9,12 @@ export function SiteFooter() {
           Find internships from many sources across Malaysia on Find My
           Internship.
         </span>
-        <Link
-          href={INTERNSHIP_URL}
+        <a
+          href="/internship"
           className="shrink-0 text-primary underline underline-offset-2 hover:underline"
         >
           Browse Now
-        </Link>
+        </a>
       </p>
     </footer>
   );
