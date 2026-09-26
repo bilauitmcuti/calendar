@@ -8,6 +8,8 @@ const EDGE = "export const runtime = 'edge';\n";
 const EDGE_PATTERN = /^export const runtime = ['"]edge['"];?\r?\n/m;
 
 const ROUTE_FILES = [
+  "app/sitemap.ts",
+  "app/robots.ts",
   "app/page.tsx",
   "app/list/page.tsx",
   "app/[program]/page.tsx",
