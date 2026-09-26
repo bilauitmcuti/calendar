@@ -106,6 +106,14 @@ curl -sI "https://bilauitmcuti.com/_next/static/chunks/<hash>.js"
 
 Dashboard: **Workers → Routes** (no apex `/_next/*`) and **Caching → Cache Rules** (rules below only; no `/calendar-static`).
 
+## Production robots.txt / sitemap overwritten (custom domain only)
+
+**Symptom:** `https://bilauitmcuti.com/robots.txt` contains `Disallow: /` (only `/internship`, `/post`, and `/llm.txt` allowed) and `https://bilauitmcuti.com/sitemap.xml` lists internship URLs only. Preview (`*.pages.dev`) still shows this app’s `Allow: /` robots file and the calendar sitemap. Google then drops indexed calendar pages.
+
+**Cause:** A zone Workers route sends `bilauitmcuti.com/robots.txt` and/or `bilauitmcuti.com/sitemap.xml` to the find-my-internship Worker. That Worker’s public robots file disallows the whole site.
+
+**Fix:** Workers → zone `bilauitmcuti.com` → **Triggers / Routes** — delete `bilauitmcuti.com/robots.txt` and `bilauitmcuti.com/sitemap.xml`. Keep internship content routes (`/internship*`, `/post*`, …) only. This calendar app is the single source for apex `/robots.txt` and `/sitemap.xml` ([`app/robots.ts`](app/robots.ts), [`app/sitemap.ts`](app/sitemap.ts)). Do not add those two routes back on the internship Worker. After the route change, purge cache for those two URLs and confirm they match `*.pages.dev`.
+
 ## Cloudflare WAF (zone, Free plan)
 
 Configure in the dashboard for zone `bilauitmcuti.com`. Docs: [Deploy managed ruleset](https://developers.cloudflare.com/waf/managed-rules/deploy-zone-dashboard/), [Managed rules availability](https://developers.cloudflare.com/waf/managed-rules/).
