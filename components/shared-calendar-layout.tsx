@@ -7,6 +7,7 @@ import { CalendarControls } from '@/components/calendar-controls';
 import { SessionQueryConsumer } from '@/components/session-query-consumer';
 import { ShareUrlSync } from '@/components/share-url-sync';
 import { CalendarGridListMount } from '@/components/calendar/grid-list-mount';
+import { CalendarTodayFab } from '@/components/calendar/today-fab';
 import { SiteFooter } from '@/components/site-footer';
 import {
   getRoutePath,
@@ -595,6 +596,22 @@ export function SharedCalendarLayout({
             initialPublicHolidaysByYear={initialPublicHolidaysByYear}
           />
         </div>
+
+        <CalendarTodayFab
+          viewMode={activeViewMode}
+          initialCurrentDate={initialCurrentDate}
+          selectedProgram={selectedProgram}
+          selectedSessions={selectedSessions}
+          showKKT={showKKT}
+          showRegistration={showRegistration}
+          showLecture={showLecture}
+          showSemesterPendek={showSemesterPendek}
+          showKuliahIntersesi={showKuliahIntersesi}
+          showExamination={showExamination}
+          showOthersExams={showOthersExams}
+          showBreak={showBreak}
+          initialPublicHolidaysByYear={initialPublicHolidaysByYear}
+        />
 
         <SiteFooter />
       </div>

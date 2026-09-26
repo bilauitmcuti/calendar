@@ -605,13 +605,13 @@ export function CalendarControls({
             style={{ transition: 'none' }}
           >
             <IconHint
-              label="Grid view"
+              label="Calendar"
               trigger={
                 <Button
                   variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
                   size="icon"
                   onClick={() => handleViewModeChange('grid')}
-                  aria-label="Grid view"
+                  aria-label="Calendar"
                   className={`${iconBaseClass} ${viewMode === 'grid' ? iconActiveClass : iconInactiveClass}`}
                   suppressHydrationWarning
                 />
@@ -620,13 +620,13 @@ export function CalendarControls({
               <HugeiconsIcon icon={Calendar04Icon} strokeWidth={2} className="h-6 w-6" />
             </IconHint>
             <IconHint
-              label="List view"
+              label="List"
               trigger={
                 <Button
                   variant={viewMode === 'list' ? 'secondary' : 'ghost'}
                   size="icon"
                   onClick={() => handleViewModeChange('list')}
-                  aria-label="List view"
+                  aria-label="List"
                   className={`${iconBaseClass} ${viewMode === 'list' ? iconActiveClass : iconInactiveClass}`}
                   suppressHydrationWarning
                 />

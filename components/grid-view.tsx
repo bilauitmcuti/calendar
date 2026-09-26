@@ -946,7 +946,12 @@ function MiniCalendar({ month, year, selectedProgram, selectedSessions, showKKT,
           );
 
           return (
-            <div key={index} suppressHydrationWarning>
+            <div
+              key={index}
+              data-calendar-date={dateStr ?? undefined}
+              className="scroll-mt-28"
+              suppressHydrationWarning
+            >
               {calendarCell}
             </div>
           );

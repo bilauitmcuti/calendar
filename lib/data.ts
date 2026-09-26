@@ -910,6 +910,92 @@ function compareActivitiesByStartDate(a: Activity, b: Activity): number {
   return a.name.localeCompare(b.name);
 }
 
+export function getListActivityRowKey(activity: Activity): string {
+  return `${activity.name}|${activity.startDate}|${activity.programType ?? ''}|${activity.endDate ?? ''}`;
+}
+
+export function getListHolidayRowKey(holiday: { id: string; date: string }): string {
+  return `${holiday.id}|${holiday.date}`;
+}
+
+function normalizeListProgramType(
+  programType: string | undefined,
+  shouldMergePartTimeForAllList: boolean
+): string {
+  if (!programType) return '';
+  if (!shouldMergePartTimeForAllList) return programType;
+  if (programType === 'DiplomaPartTime' || programType === 'BachelorPartTime') return 'PartTime';
+  return programType;
+}
+
+/** One list row per activity (multi-session merge; Part-Time merge on Group B "All"). */
+export function getUniqueListActivities(
+  listActivities: Activity[],
+  shouldMergePartTimeForAllList: boolean
+): Activity[] {
+  return Array.from(
+    new Map(
+      listActivities.map((activity) => {
+        const dedupeKey = [
+          activity.name,
+          activity.startDate,
+          activity.endDate || '',
+          activity.type,
+          activity.details || '',
+          activity.duration || '',
+          activity.regionalStartDate || '',
+          activity.regionalEndDate || '',
+          activity.allStudents ? '1' : '0',
+          activity.programTypes?.length
+            ? activity.programTypes.join(',')
+            : normalizeListProgramType(activity.programType, shouldMergePartTimeForAllList),
+        ].join('|');
+
+        return [dedupeKey, activity] as const;
+      })
+    ).values()
+  ).sort(compareActivitiesByStartDate);
+}
+
+export type ListTodayAnchorKind = 'active' | 'holiday' | 'upcoming';
+
+export interface ListTodayAnchor {
+  rowKey: string | null;
+  kind: ListTodayAnchorKind | null;
+}
+
+/**
+ * List Today target: activity covering today, else today's holiday, else the nearest upcoming activity.
+ * `uniqueActivities` must already be in list order ({@link getUniqueListActivities}).
+ */
+export function resolveListTodayAnchorKey(
+  uniqueActivities: Activity[],
+  holidaysByDate: Record<string, Array<{ id: string; date: string }>>,
+  todayStr: string,
+  showKKT: boolean
+): ListTodayAnchor {
+  if (!todayStr) return { rowKey: null, kind: null };
+
+  for (const activity of uniqueActivities) {
+    if (matchesActivityDate(activity, todayStr, showKKT)) {
+      return { rowKey: getListActivityRowKey(activity), kind: 'active' };
+    }
+  }
+
+  const todayHolidays = holidaysByDate[todayStr];
+  if (todayHolidays && todayHolidays.length > 0) {
+    return { rowKey: getListHolidayRowKey(todayHolidays[0]!), kind: 'holiday' };
+  }
+
+  for (const activity of uniqueActivities) {
+    if (normalizeDateString(activity.startDate) >= todayStr) {
+      return { rowKey: getListActivityRowKey(activity), kind: 'upcoming' };
+    }
+  }
+
+  return { rowKey: null, kind: null };
+}
+
 /**
  * All activities for list view: every row from the store for selected sessions,
  * filtered like grid ({@link shouldIncludeActivity}), deduped across sessions, sorted by startDate.

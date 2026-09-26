@@ -1,24 +1,28 @@
-import { memo, useMemo, useCallback, useSyncExternalStore } from 'react';
+import { memo, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import { useCalendarHydrationVersion } from '@/components/calendar-hydration-context';
 import { getSnapshot, subscribe } from '@/lib/calendar-store';
 import { cn } from '@/lib/utils';
 import {
   getActivitiesForList,
   getActivityListDisplayAnchorDate,
+  getListActivityRowKey,
+  getListHolidayRowKey,
+  getUniqueListActivities,
   groupActivitiesByListStartDate,
   groupActivitiesByListStartMonth,
   parseListMonthKey,
   formatDateRange,
   getDaysUntilStart,
   formatCountdown,
+  resolveListTodayAnchorKey,
   getProgramBadgeConfig,
   getProgramBadgesConfig,
   type Activity,
   type ActivityFilterOptions,
-  type ProgramGroup,
   type SessionId,
 } from '@/lib/data';
 import type { PublicHolidayRow } from '@/lib/calendar-api';
+import { getTodayISO } from '@/lib/malaysia-dates';
 import { formatHolidayStates, listMonthKeyFromIsoDate } from '@/lib/public-holidays-for-view';
 
 function formatListDate(dateStr: string) {
@@ -258,20 +262,6 @@ interface ListViewProps {
   holidaysByDate?: Record<string, PublicHolidayRow[]>;
 }
 
-function getMalaysiaTodayStr(): string {
-  if (typeof window === 'undefined') return '';
-  try {
-    const now = new Date();
-    const malaysiaTime = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Kuala_Lumpur' }));
-    const y = malaysiaTime.getFullYear();
-    const m = String(malaysiaTime.getMonth() + 1).padStart(2, '0');
-    const d = String(malaysiaTime.getDate()).padStart(2, '0');
-    return `${y}-${m}-${d}`;
-  } catch {
-    return '';
-  }
-}
-
 export const ListView = memo(function ListView({ 
   selectedProgram, 
   selectedSessions,
@@ -295,15 +285,14 @@ export const ListView = memo(function ListView({
     () => getSnapshot().version,
     () => hydrationServerVersion
   );
-  const todayStr = useMemo(() => {
-    if (initialCurrentDate) return initialCurrentDate;
-    return getMalaysiaTodayStr();
-  }, [initialCurrentDate]);
+  const [todayStr, setTodayStr] = useState(() => initialCurrentDate ?? '');
 
-  const getProgramGroup = (program: string): ProgramGroup => {
-    if (program === 'Foundation/Professional' || program === 'Foundation' || program === 'Professional') return 'A';
-    return 'B';
-  };
+  useEffect(() => {
+    const sync = () => setTodayStr(getTodayISO());
+    sync();
+    const interval = setInterval(sync, 60000);
+    return () => clearInterval(interval);
+  }, []);
 
   const listFilterOptions = useMemo<ActivityFilterOptions>(
     () => ({
@@ -328,52 +317,16 @@ export const ListView = memo(function ListView({
     ]
   );
 
-  const group = useMemo(() => getProgramGroup(selectedProgram), [selectedProgram]);
-  const shouldMergePartTimeForAllList = useMemo(
-    () => group === 'B' && selectedProgram === 'All',
-    [group, selectedProgram]
-  );
+  const shouldMergePartTimeForAllList = selectedProgram === 'All';
 
-  const getNormalizedProgramType = useCallback((programType?: string): string => {
-    if (!programType) return '';
-    if (!shouldMergePartTimeForAllList) return programType;
-    if (programType === 'DiplomaPartTime' || programType === 'BachelorPartTime') return 'PartTime';
-    return programType;
-  }, [shouldMergePartTimeForAllList]);
-  
   const listActivities = useMemo(() => {
     void calendarDataVersion;
     return getActivitiesForList(selectedSessions, listFilterOptions);
   }, [selectedSessions, listFilterOptions, calendarDataVersion]);
 
-  // One list row per activity (multi-session merge; Part-Time merge on Group B "All").
   const uniqueActivities = useMemo(
-    () =>
-      Array.from(
-        new Map(
-          listActivities.map((activity) => {
-            const dedupeKey = [
-              activity.name,
-              activity.startDate,
-              activity.endDate || '',
-              activity.type,
-              activity.details || '',
-              activity.duration || '',
-              activity.regionalStartDate || '',
-              activity.regionalEndDate || '',
-              activity.allStudents ? '1' : '0',
-              activity.programTypes?.length ? activity.programTypes.join(',') : getNormalizedProgramType(activity.programType),
-            ].join('|');
-
-            return [dedupeKey, activity] as const;
-          })
-        ).values()
-      ).sort((a, b) => {
-        const dateCompare = new Date(a.startDate).getTime() - new Date(b.startDate).getTime();
-        if (dateCompare !== 0) return dateCompare;
-        return a.name.localeCompare(b.name);
-      }),
-    [listActivities, getNormalizedProgramType]
+    () => getUniqueListActivities(listActivities, shouldMergePartTimeForAllList),
+    [listActivities, shouldMergePartTimeForAllList]
   );
 
   const groupedByMonth = useMemo(
@@ -413,6 +366,11 @@ export const ListView = memo(function ListView({
     [groupedByMonth, holidayDatesByMonth]
   );
 
+  const todayListAnchorKey = useMemo(
+    () => resolveListTodayAnchorKey(uniqueActivities, holidaysByDate, todayStr, showKKT).rowKey,
+    [uniqueActivities, holidaysByDate, todayStr, showKKT]
+  );
+
   const hasAnyActivities = uniqueActivities.length > 0;
   const hasAnyHolidays = Object.keys(holidaysByDate).length > 0;
 
@@ -448,7 +406,11 @@ export const ListView = memo(function ListView({
         
         return (
         <div key={month} suppressHydrationWarning className="transition-none">
-          <div className="-mx-3 pb-4 pt-3 transition-none" suppressHydrationWarning>
+          <div
+            data-calendar-month={month}
+            className="scroll-mt-28 -mx-3 pb-4 pt-3 transition-none"
+            suppressHydrationWarning
+          >
             <h3 className={`font-semibold text-xl leading-7 text-left ${textClass} px-3 transition-none`} suppressHydrationWarning>{month}</h3>
           </div>
           
@@ -457,7 +419,11 @@ export const ListView = memo(function ListView({
                 const activities = activitiesByDate.get(dateStr) ?? [];
                 const holidays = holidaysByDate[dateStr] ?? [];
                 return (
-                  <div key={dateStr} className="space-y-2 md:space-y-4 transition-none" suppressHydrationWarning>
+                  <div
+                    key={dateStr}
+                    className="space-y-2 md:space-y-4 transition-none"
+                    suppressHydrationWarning
+                  >
                     <ListDateColumn
                       dateStr={dateStr}
                       textClass={textClass}
@@ -468,6 +434,8 @@ export const ListView = memo(function ListView({
                     <div className="space-y-4 transition-none" suppressHydrationWarning>
                       {activities.map((activity) => {
                         const activityDateStr = getActivityListDisplayAnchorDate(activity, showKKT);
+                        const rowKey = getListActivityRowKey(activity);
+                        const isTodayAnchor = todayListAnchorKey === rowKey;
                         const activityCountdownLabel = getActivityCountdownLabel(
                           activity,
                           todayStr,
@@ -477,8 +445,12 @@ export const ListView = memo(function ListView({
 
                         return (
                           <div
-                            key={`${activity.name}|${activity.startDate}|${activity.programType ?? ''}|${activity.endDate ?? ''}`}
-                            className="flex gap-4 rounded-lg p-3 px-0 transition-none md:flex-row"
+                            key={rowKey}
+                            {...(isTodayAnchor ? { 'data-list-today-anchor': '' } : {})}
+                            className={cn(
+                              'flex gap-4 rounded-lg p-3 px-0 transition-none md:flex-row',
+                              isTodayAnchor && 'scroll-mt-28'
+                            )}
                             suppressHydrationWarning
                           >
                             <ListDateColumn
@@ -501,10 +473,17 @@ export const ListView = memo(function ListView({
                           </div>
                         );
                       })}
-                      {holidays.map((holiday) => (
+                      {holidays.map((holiday) => {
+                        const rowKey = getListHolidayRowKey(holiday);
+                        const isTodayAnchor = todayListAnchorKey === rowKey;
+                        return (
                         <div
-                          key={`${holiday.id}|${holiday.date}`}
-                          className="flex gap-4 rounded-lg p-3 px-0 transition-none md:flex-row"
+                          key={rowKey}
+                          {...(isTodayAnchor ? { 'data-list-today-anchor': '' } : {})}
+                          className={cn(
+                            'flex gap-4 rounded-lg p-3 px-0 transition-none md:flex-row',
+                            isTodayAnchor && 'scroll-mt-28'
+                          )}
                           suppressHydrationWarning
                         >
                           <ListDateColumn
@@ -519,7 +498,8 @@ export const ListView = memo(function ListView({
                             mutedClass={mutedClass}
                           />
                         </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
                 );
