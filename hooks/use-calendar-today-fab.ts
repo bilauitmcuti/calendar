@@ -26,7 +26,11 @@ function findTodayAnchor(viewMode: ViewMode, todayStr: string): Element | null {
   if (!root) return null;
 
   if (viewMode === "list") {
-    return root.querySelector("[data-list-today-anchor]");
+    const anchors = root.querySelectorAll("[data-list-today-anchor]");
+    for (const el of anchors) {
+      if (el.getClientRects().length > 0) return el;
+    }
+    return anchors[0] ?? null;
   }
 
   const dateEl = root.querySelector(`[data-calendar-date="${todayStr}"]`);
@@ -139,7 +143,10 @@ export function useCalendarTodayFab({
     programmaticScrollRef.current = true;
     setIdleHidden(true);
     setIsScrolling(false);
-    el.scrollIntoView({ behavior: "smooth", block: "center" });
+    el.scrollIntoView({
+      behavior: "smooth",
+      block: viewMode === "list" ? "start" : "center",
+    });
     window.setTimeout(() => {
       programmaticScrollRef.current = false;
     }, PROGRAMMATIC_SCROLL_MS);

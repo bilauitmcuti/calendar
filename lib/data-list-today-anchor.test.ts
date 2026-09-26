@@ -1,10 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  getListActivityRowKey,
-  getUniqueListActivities,
-  resolveListTodayAnchorKey,
-  type Activity,
-} from "./data";
+import { getUniqueListActivities, resolveListTodayAnchorKey, type Activity } from "./data";
 
 function activity(partial: Partial<Activity> & Pick<Activity, "name" | "startDate">): Activity {
   return {
@@ -15,57 +10,61 @@ function activity(partial: Partial<Activity> & Pick<Activity, "name" | "startDat
 }
 
 describe("resolveListTodayAnchorKey", () => {
-  it("anchors an activity that covers today, even when the row starts earlier", () => {
-    const ongoing = activity({
-      name: "Persetujuan Menerima Tawaran",
-      startDate: "2026-09-04",
-      endDate: "2026-09-18",
-      programType: "Diploma",
+  it("uses the closest displayed start date, not a range that still covers today", () => {
+    const spanning = activity({
+      name: "Pendaftaran Pelajar Baharu",
+      startDate: "2026-09-07",
+      endDate: "2026-09-27",
     });
-    const later = activity({
-      name: "Kuliah",
-      startDate: "2026-09-21",
-      endDate: "2026-10-02",
+    const nearer = activity({
+      name: "Tempoh Permohonan",
+      startDate: "2026-09-24",
+      endDate: "2026-10-18",
     });
 
-    const result = resolveListTodayAnchorKey([ongoing, later], {}, "2026-09-10", false);
-
-    expect(result).toEqual({
-      rowKey: getListActivityRowKey(ongoing),
-      kind: "active",
+    expect(resolveListTodayAnchorKey([spanning, nearer], {}, "2026-09-26", false)).toEqual({
+      rowKey: "2026-09-24",
+      kind: "past",
     });
   });
 
-  it("uses the first list row when two activities start today", () => {
+  it("prefers an exact displayed date over a nearer-looking range", () => {
+    const earlier = activity({ name: "Alpha", startDate: "2026-09-10", endDate: "2026-09-12" });
+    const later = activity({ name: "Beta", startDate: "2026-09-21", endDate: "2026-10-02" });
+
+    expect(resolveListTodayAnchorKey([earlier, later], {}, "2026-09-10", false)).toEqual({
+      rowKey: "2026-09-10",
+      kind: "today",
+    });
+  });
+
+  it("keeps the first list order only as a display date, when two rows share today", () => {
     const first = activity({ name: "Alpha", startDate: "2026-09-10", endDate: "2026-09-12" });
     const second = activity({ name: "Beta", startDate: "2026-09-10", endDate: "2026-09-12" });
     const unique = getUniqueListActivities([second, first], false);
 
-    const result = resolveListTodayAnchorKey(unique, {}, "2026-09-10", false);
-
-    expect(result).toEqual({
-      rowKey: getListActivityRowKey(first),
-      kind: "active",
+    expect(resolveListTodayAnchorKey(unique, {}, "2026-09-10", false)).toEqual({
+      rowKey: "2026-09-10",
+      kind: "today",
     });
   });
 
-  it("falls back to today's holiday when no activity covers today", () => {
+  it("treats a holiday date as a displayed date", () => {
     const past = activity({
       name: "Ended",
       startDate: "2026-09-01",
       endDate: "2026-09-03",
     });
-    const holiday = { id: "ph-1", date: "2026-09-16" };
 
-    const result = resolveListTodayAnchorKey([past], { "2026-09-16": [holiday] }, "2026-09-16", false);
-
-    expect(result).toEqual({
-      rowKey: "ph-1|2026-09-16",
-      kind: "holiday",
+    expect(
+      resolveListTodayAnchorKey([past], { "2026-09-16": [{ id: "ph-1", date: "2026-09-16" }] }, "2026-09-16", false)
+    ).toEqual({
+      rowKey: "2026-09-16",
+      kind: "today",
     });
   });
 
-  it("falls back to the nearest upcoming activity when today has no row", () => {
+  it("picks the closest upcoming display date when that is nearer than a past date", () => {
     const past = activity({
       name: "Ended",
       startDate: "2026-09-04",
@@ -77,11 +76,19 @@ describe("resolveListTodayAnchorKey", () => {
       endDate: "2026-10-10",
     });
 
-    const result = resolveListTodayAnchorKey([past, upcoming], {}, "2026-09-26", false);
-
-    expect(result).toEqual({
-      rowKey: getListActivityRowKey(upcoming),
+    expect(resolveListTodayAnchorKey([past, upcoming], {}, "2026-09-26", false)).toEqual({
+      rowKey: "2026-10-01",
       kind: "upcoming",
+    });
+  });
+
+  it("prefers the past display date when past and upcoming are equally close", () => {
+    const past = activity({ name: "Thu", startDate: "2026-09-24", endDate: "2026-10-18" });
+    const upcoming = activity({ name: "Mon", startDate: "2026-09-28", endDate: "2026-12-20" });
+
+    expect(resolveListTodayAnchorKey([past, upcoming], {}, "2026-09-26", false)).toEqual({
+      rowKey: "2026-09-24",
+      kind: "past",
     });
   });
 

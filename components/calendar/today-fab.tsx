@@ -23,6 +23,11 @@ import { cn } from "@/lib/utils";
 
 const EMPTY_PUBLIC_HOLIDAYS_BY_YEAR: PublicHolidaysByYear = {};
 
+/** Matches Button size="sm" (h-8). */
+const FAB_HEIGHT_PX = 32;
+/** Gap above visual viewport bottom (1.5rem). */
+const FAB_GAP_PX = 24;
+
 interface CalendarTodayFabProps {
   viewMode: ViewMode;
   initialCurrentDate?: string;
@@ -112,36 +117,12 @@ export function CalendarTodayFab({
     return isTodayInSessionRange(todayStr, months);
   }, [calendarDataVersion, selectedSessions, monthOptions, todayStr]);
 
-  const anchorRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
     setIsMounted(true);
   }, []);
-
-  useEffect(() => {
-    if (!isMounted) return;
-    const viewport = window.visualViewport;
-    const anchor = anchorRef.current;
-    if (!viewport || !anchor) return;
-
-    const syncBottomInset = () => {
-      const layoutHeight = Math.max(window.innerHeight, document.documentElement.clientHeight);
-      const visualBottom = viewport.offsetTop + viewport.height;
-      const inset = Math.max(0, layoutHeight - visualBottom);
-      anchor.style.setProperty("--today-fab-vv-bottom", `${inset}px`);
-    };
-
-    syncBottomInset();
-    viewport.addEventListener("resize", syncBottomInset);
-    viewport.addEventListener("scroll", syncBottomInset);
-    window.addEventListener("resize", syncBottomInset);
-    return () => {
-      viewport.removeEventListener("resize", syncBottomInset);
-      viewport.removeEventListener("scroll", syncBottomInset);
-      window.removeEventListener("resize", syncBottomInset);
-    };
-  }, [isMounted]);
 
   const listFilterOptions = useMemo<ActivityFilterOptions>(
     () => ({
@@ -203,42 +184,76 @@ export function CalendarTodayFab({
     anchorVersion: `${calendarDataVersion}|${viewMode}|${sessionKey}|${todayStr}|${listTodayAnchorKey ?? "none"}`,
   });
 
+  useEffect(() => {
+    if (!isMounted) return;
+    const button = buttonRef.current;
+    const viewport = window.visualViewport;
+    if (!button || !viewport) return;
+
+    const syncFabPosition = () => {
+      const visualBottom = viewport.offsetTop + viewport.height;
+      const top = visualBottom - FAB_HEIGHT_PX - FAB_GAP_PX;
+      button.style.top = `${top}px`;
+      button.style.bottom = "auto";
+      button.style.left = "50%";
+
+      const toolbarInset = Math.max(0, window.innerHeight - visualBottom);
+      document.documentElement.style.setProperty(
+        "--today-fab-toolbar-inset",
+        `${toolbarInset}px`
+      );
+    };
+
+    syncFabPosition();
+    viewport.addEventListener("resize", syncFabPosition);
+    viewport.addEventListener("scroll", syncFabPosition);
+    window.addEventListener("resize", syncFabPosition);
+    window.addEventListener("orientationchange", syncFabPosition);
+
+    return () => {
+      viewport.removeEventListener("resize", syncFabPosition);
+      viewport.removeEventListener("scroll", syncFabPosition);
+      window.removeEventListener("resize", syncFabPosition);
+      window.removeEventListener("orientationchange", syncFabPosition);
+      document.documentElement.style.removeProperty("--today-fab-toolbar-inset");
+    };
+  }, [isMounted]);
+
   if (!isMounted) return null;
 
   return createPortal(
-    <div
-      ref={anchorRef}
-      className="pointer-events-none fixed inset-x-0 z-40 flex justify-center bottom-[calc(max(1.5rem,env(safe-area-inset-bottom,0px))+var(--today-fab-vv-bottom,0px))] supports-[height:100dvh]:bottom-[calc(1.5rem+max(env(safe-area-inset-bottom,0px),100lvh-100dvh,var(--today-fab-vv-bottom,0px)))]"
+    <Button
+      ref={buttonRef}
+      type="button"
+      variant="secondary"
+      size="sm"
+      aria-label="Go to today"
+      aria-hidden={!shouldShow}
+      data-today-fab=""
+      tabIndex={-1}
+      onMouseDown={(event) => {
+        event.preventDefault();
+      }}
+      onClick={scrollToToday}
+      style={{
+        transitionProperty: "translate, opacity",
+        transitionDuration: "300ms",
+        transitionTimingFunction: "cubic-bezier(0.23, 1, 0.32, 1)",
+        transform: shouldShow
+          ? "translateX(-50%) translateY(0)"
+          : "translateX(-50%) translateY(calc(100% + 24px))",
+      }}
+      className={cn(
+        "fixed z-40 rounded-full px-4 shadow-md",
+        "bottom-[max(1.5rem,env(safe-area-inset-bottom,0px))] left-1/2",
+        "outline-none focus:outline-none focus-visible:border-transparent focus-visible:ring-0",
+        "[&:focus]:ring-0 [&:focus-visible]:ring-0 [&:focus]:shadow-none [&:focus-visible]:shadow-none",
+        "active:translate-y-0",
+        shouldShow ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0"
+      )}
     >
-      <Button
-        type="button"
-        variant="secondary"
-        size="sm"
-        aria-label="Go to today"
-        aria-hidden={!shouldShow}
-        data-today-fab=""
-        tabIndex={-1}
-        onMouseDown={(event) => {
-          event.preventDefault();
-        }}
-        onClick={scrollToToday}
-        style={{
-          transitionProperty: "translate, opacity",
-          transitionDuration: "300ms",
-          transitionTimingFunction: "cubic-bezier(0.23, 1, 0.32, 1)",
-        }}
-        className={cn(
-          "rounded-full px-4 shadow-md",
-          "outline-none focus:outline-none focus-visible:border-transparent focus-visible:ring-0",
-          "[&:focus]:ring-0 [&:focus-visible]:ring-0 [&:focus]:shadow-none [&:focus-visible]:shadow-none",
-          shouldShow
-            ? "pointer-events-auto translate-y-0 opacity-100"
-            : "pointer-events-none translate-y-[calc(100%+1.75rem+max(env(safe-area-inset-bottom,0px),100lvh-100dvh,var(--today-fab-vv-bottom,0px)))] opacity-0"
-        )}
-      >
-        Today
-      </Button>
-    </div>,
+      Today
+    </Button>,
     document.body
   );
 }

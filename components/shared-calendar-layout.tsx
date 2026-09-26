@@ -540,7 +540,10 @@ export function SharedCalendarLayout({
       style={{ transition: 'none' }}
       data-nosnippet
     >
-      <div className="mx-auto max-w-[1000px] px-4 py-8 sm:px-6 lg:px-4 transition-none" style={{ transition: 'none' }}>
+      <div
+        className="mx-auto max-w-[1000px] px-4 py-8 pb-[calc(2rem+var(--today-fab-toolbar-inset,0px)+env(safe-area-inset-bottom,0px))] sm:px-6 lg:px-4 transition-none"
+        style={{ transition: 'none' }}
+      >
         <CalendarHeader
           selectedSessions={selectedSessions}
           programGroup={programGroup}

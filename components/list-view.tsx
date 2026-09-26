@@ -41,13 +41,26 @@ interface ListDateColumnProps {
   mutedClass: string;
   countdownLabel?: string | null;
   className?: string;
+  isTodayAnchor?: boolean;
 }
 
-function ListDateColumn({ dateStr, textClass, mutedClass, countdownLabel, className }: ListDateColumnProps) {
+function ListDateColumn({
+  dateStr,
+  textClass,
+  mutedClass,
+  countdownLabel,
+  className,
+  isTodayAnchor,
+}: ListDateColumnProps) {
   const formattedDate = formatListDate(dateStr);
   return (
     <div
-      className={cn(`flex w-20 flex-col items-start text-sm ${mutedClass} transition-none`, className)}
+      {...(isTodayAnchor ? { 'data-list-today-anchor': '' } : {})}
+      className={cn(
+        `flex w-20 flex-col items-start text-sm ${mutedClass} transition-none`,
+        isTodayAnchor && 'scroll-mt-28',
+        className
+      )}
       suppressHydrationWarning
     >
       <div className="transition-none" suppressHydrationWarning>
@@ -429,13 +442,13 @@ export const ListView = memo(function ListView({
                       textClass={textClass}
                       mutedClass={mutedClass}
                       className="md:hidden px-0"
+                      isTodayAnchor={todayListAnchorKey === dateStr}
                     />
 
                     <div className="space-y-4 transition-none" suppressHydrationWarning>
-                      {activities.map((activity) => {
+                      {activities.map((activity, activityIndex) => {
                         const activityDateStr = getActivityListDisplayAnchorDate(activity, showKKT);
                         const rowKey = getListActivityRowKey(activity);
-                        const isTodayAnchor = todayListAnchorKey === rowKey;
                         const activityCountdownLabel = getActivityCountdownLabel(
                           activity,
                           todayStr,
@@ -446,11 +459,7 @@ export const ListView = memo(function ListView({
                         return (
                           <div
                             key={rowKey}
-                            {...(isTodayAnchor ? { 'data-list-today-anchor': '' } : {})}
-                            className={cn(
-                              'flex gap-4 rounded-lg p-3 px-0 transition-none md:flex-row',
-                              isTodayAnchor && 'scroll-mt-28'
-                            )}
+                            className="flex gap-4 rounded-lg p-3 px-0 transition-none md:flex-row"
                             suppressHydrationWarning
                           >
                             <ListDateColumn
@@ -459,6 +468,7 @@ export const ListView = memo(function ListView({
                               mutedClass={mutedClass}
                               countdownLabel={activityCountdownLabel}
                               className="hidden md:flex"
+                              isTodayAnchor={todayListAnchorKey === dateStr && activityIndex === 0}
                             />
 
                             <ListActivityDetails
@@ -473,17 +483,12 @@ export const ListView = memo(function ListView({
                           </div>
                         );
                       })}
-                      {holidays.map((holiday) => {
+                      {holidays.map((holiday, holidayIndex) => {
                         const rowKey = getListHolidayRowKey(holiday);
-                        const isTodayAnchor = todayListAnchorKey === rowKey;
                         return (
                         <div
                           key={rowKey}
-                          {...(isTodayAnchor ? { 'data-list-today-anchor': '' } : {})}
-                          className={cn(
-                            'flex gap-4 rounded-lg p-3 px-0 transition-none md:flex-row',
-                            isTodayAnchor && 'scroll-mt-28'
-                          )}
+                          className="flex gap-4 rounded-lg p-3 px-0 transition-none md:flex-row"
                           suppressHydrationWarning
                         >
                           <ListDateColumn
@@ -491,6 +496,9 @@ export const ListView = memo(function ListView({
                             textClass={textClass}
                             mutedClass={mutedClass}
                             className="hidden md:flex"
+                            isTodayAnchor={
+                              todayListAnchorKey === holiday.date && activities.length === 0 && holidayIndex === 0
+                            }
                           />
                           <ListHolidayDetails
                             holiday={holiday}
