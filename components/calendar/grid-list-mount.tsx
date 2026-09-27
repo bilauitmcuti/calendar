@@ -88,19 +88,21 @@ export function CalendarGridListMount({
 
   return (
     <>
-      {bothViewsMounted ? (
-        <>
-          <div style={{ display: activeViewMode === 'list' ? 'block' : 'none' }}>
-            <ListView {...sharedViewProps} />
-          </div>
-          <div style={{ display: activeViewMode === 'grid' ? 'block' : 'none' }}>
-            <GridView {...sharedViewProps} />
-          </div>
-        </>
-      ) : activeViewMode === 'list' ? (
-        <ListView {...sharedViewProps} />
-      ) : (
-        <GridView {...sharedViewProps} />
+      {(bothViewsMounted || activeViewMode === 'list') && (
+        <div
+          data-calendar-view="list"
+          style={{ display: activeViewMode === 'list' ? 'block' : 'none' }}
+        >
+          <ListView {...sharedViewProps} />
+        </div>
+      )}
+      {(bothViewsMounted || activeViewMode === 'grid') && (
+        <div
+          data-calendar-view="grid"
+          style={{ display: activeViewMode === 'grid' ? 'block' : 'none' }}
+        >
+          <GridView {...sharedViewProps} />
+        </div>
       )}
     </>
   );

@@ -176,6 +176,7 @@ Client code uses [`lib/zaraz.ts`](lib/zaraz.ts) (`trackZarazEvent`, `ZARAZ_EVENT
 | `viewCalendarDate` | `view_calendar_date` | User opens a calendar day (drawer) |
 | `navigateCalendarDay` | `navigate_calendar_day` | User moves to prev/next day in drawer |
 | `changeViewMode` | `change_view_mode` | User switches grid ↔ list |
+| `goToToday` | `go_to_today` | User taps the floating Today button (scroll to current date) |
 | `toggleCalendarFilter` | `toggle_calendar_filter` | User toggles an activity filter |
 | `openSettings` | `open_settings` | User opens settings popover |
 | `openChat` | `open_chat` | User taps Chat |

@@ -7,6 +7,7 @@ import { CalendarControls } from '@/components/calendar-controls';
 import { SessionQueryConsumer } from '@/components/session-query-consumer';
 import { ShareUrlSync } from '@/components/share-url-sync';
 import { CalendarGridListMount } from '@/components/calendar/grid-list-mount';
+import { CalendarTodayFab } from '@/components/calendar/today-fab';
 import { SiteFooter } from '@/components/site-footer';
 import {
   getRoutePath,
@@ -539,7 +540,10 @@ export function SharedCalendarLayout({
       style={{ transition: 'none' }}
       data-nosnippet
     >
-      <div className="mx-auto max-w-[1000px] px-4 py-8 sm:px-6 lg:px-4 transition-none" style={{ transition: 'none' }}>
+      <div
+        className="mx-auto max-w-[1000px] px-4 py-8 pb-[calc(2rem+var(--today-fab-toolbar-inset,0px)+env(safe-area-inset-bottom,0px))] sm:px-6 lg:px-4 transition-none"
+        style={{ transition: 'none' }}
+      >
         <CalendarHeader
           selectedSessions={selectedSessions}
           programGroup={programGroup}
@@ -595,6 +599,22 @@ export function SharedCalendarLayout({
             initialPublicHolidaysByYear={initialPublicHolidaysByYear}
           />
         </div>
+
+        <CalendarTodayFab
+          viewMode={activeViewMode}
+          initialCurrentDate={initialCurrentDate}
+          selectedProgram={selectedProgram}
+          selectedSessions={selectedSessions}
+          showKKT={showKKT}
+          showRegistration={showRegistration}
+          showLecture={showLecture}
+          showSemesterPendek={showSemesterPendek}
+          showKuliahIntersesi={showKuliahIntersesi}
+          showExamination={showExamination}
+          showOthersExams={showOthersExams}
+          showBreak={showBreak}
+          initialPublicHolidaysByYear={initialPublicHolidaysByYear}
+        />
 
         <SiteFooter />
       </div>

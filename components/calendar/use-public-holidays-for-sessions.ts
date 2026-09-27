@@ -28,7 +28,13 @@ export function usePublicHolidaysForSessions(
 
   useEffect(() => {
     if (!initialByYear) return;
-    setByYear((prev) => ({ ...initialByYear, ...prev }));
+    setByYear((prev) => {
+      const alreadyApplied = Object.keys(initialByYear).every(
+        (year) => prev[Number(year)] === initialByYear[Number(year)]
+      );
+      if (alreadyApplied) return prev;
+      return { ...initialByYear, ...prev };
+    });
   }, [initialByYear]);
 
   const years = useMemo(() => {
