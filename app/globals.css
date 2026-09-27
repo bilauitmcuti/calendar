@@ -168,7 +168,7 @@ button[type="button"][title*="View"],
 
 /* Disable transitions for theme-aware elements - instant theme switching */
 /* Only allow transitions for hover states, not theme changes */
-*:not(.sticky.top-0):not(.sticky.top-0 *):not([data-slot="select-trigger"]):not([data-slot="select-content"]):not([data-slot="popover-content"]):not([data-slot="popover-content"] *):not([data-slot="drawer-popup"]):not([data-slot="drawer-overlay"]):not(:hover):not(button:hover):not(a:hover) {
+*:not(.sticky.top-0):not(.sticky.top-0 *):not([data-slot="select-trigger"]):not([data-slot="select-content"]):not([data-slot="popover-content"]):not([data-slot="popover-content"] *):not([data-slot="drawer-popup"]):not([data-slot="drawer-overlay"]):not([data-today-fab]):not(:hover):not(button:hover):not(a:hover) {
   transition-property: none !important;
   transition-duration: 0ms !important;
 }
@@ -181,6 +181,20 @@ a:hover,
   transition-property: opacity !important;
   transition-duration: 100ms !important;
   transition-timing-function: ease-out !important;
+}
+
+[data-today-fab],
+[data-today-fab]:hover {
+  transition-property: translate, opacity !important;
+  transition-duration: 300ms !important;
+  transition-timing-function: cubic-bezier(0.23, 1, 0.32, 1) !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-today-fab],
+  [data-today-fab]:hover {
+    transition: none !important;
+  }
 }
 
 /*

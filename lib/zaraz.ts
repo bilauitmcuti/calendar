@@ -25,6 +25,7 @@ export const ZARAZ_EVENTS = {
   openDownload: "open_download",
   openFeedback: "open_feedback",
   copyShareLink: "copy_share_link",
+  goToToday: "go_to_today",
 } as const;
 
 type ZarazEventName = (typeof ZARAZ_EVENTS)[keyof typeof ZARAZ_EVENTS];

@@ -910,6 +910,117 @@ function compareActivitiesByStartDate(a: Activity, b: Activity): number {
   return a.name.localeCompare(b.name);
 }
 
+export function getListActivityRowKey(activity: Activity): string {
+  return `${activity.name}|${activity.startDate}|${activity.programType ?? ''}|${activity.endDate ?? ''}`;
+}
+
+export function getListHolidayRowKey(holiday: { id: string; date: string }): string {
+  return `${holiday.id}|${holiday.date}`;
+}
+
+function normalizeListProgramType(
+  programType: string | undefined,
+  shouldMergePartTimeForAllList: boolean
+): string {
+  if (!programType) return '';
+  if (!shouldMergePartTimeForAllList) return programType;
+  if (programType === 'DiplomaPartTime' || programType === 'BachelorPartTime') return 'PartTime';
+  return programType;
+}
+
+/** One list row per activity (multi-session merge; Part-Time merge on Group B "All"). */
+export function getUniqueListActivities(
+  listActivities: Activity[],
+  shouldMergePartTimeForAllList: boolean
+): Activity[] {
+  return Array.from(
+    new Map(
+      listActivities.map((activity) => {
+        const dedupeKey = [
+          activity.name,
+          activity.startDate,
+          activity.endDate || '',
+          activity.type,
+          activity.details || '',
+          activity.duration || '',
+          activity.regionalStartDate || '',
+          activity.regionalEndDate || '',
+          activity.allStudents ? '1' : '0',
+          activity.programTypes?.length
+            ? activity.programTypes.join(',')
+            : normalizeListProgramType(activity.programType, shouldMergePartTimeForAllList),
+        ].join('|');
+
+        return [dedupeKey, activity] as const;
+      })
+    ).values()
+  ).sort(compareActivitiesByStartDate);
+}
+
+export type ListTodayAnchorKind = 'today' | 'past' | 'upcoming';
+
+export interface ListTodayAnchor {
+  /** Displayed list date (YYYY-MM-DD), the left-column label — not an activity range. */
+  rowKey: string | null;
+  kind: ListTodayAnchorKind | null;
+}
+
+function isoDayUtc(dateStr: string): number | null {
+  const normalized = normalizeDateString(dateStr);
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(normalized);
+  if (!match) return null;
+  return Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+}
+
+/**
+ * List Today target is the date shown in the list date column.
+ * Exact today wins. Otherwise the closest past or upcoming display date
+ * (activity start, or holiday date). An activity range that merely covers today does not win.
+ */
+export function resolveListTodayAnchorKey(
+  uniqueActivities: Activity[],
+  holidaysByDate: Record<string, Array<{ id: string; date: string }>>,
+  todayStr: string,
+  showKKT: boolean
+): ListTodayAnchor {
+  const todayUtc = isoDayUtc(todayStr);
+  if (todayUtc == null) return { rowKey: null, kind: null };
+
+  const dates = new Set<string>();
+  for (const activity of uniqueActivities) {
+    const date = normalizeDateString(getActivityListDisplayAnchorDate(activity, showKKT));
+    if (isoDayUtc(date) != null) dates.add(date);
+  }
+  for (const date of Object.keys(holidaysByDate)) {
+    const normalized = normalizeDateString(date);
+    if (isoDayUtc(normalized) != null) dates.add(normalized);
+  }
+  if (dates.size === 0) return { rowKey: null, kind: null };
+
+  const today = normalizeDateString(todayStr);
+  if (dates.has(today)) return { rowKey: today, kind: 'today' };
+
+  let bestDate: string | null = null;
+  let bestAbs = Infinity;
+  let bestKind: 'past' | 'upcoming' = 'upcoming';
+  for (const date of dates) {
+    const utc = isoDayUtc(date);
+    if (utc == null) continue;
+    const delta = utc - todayUtc;
+    const abs = Math.abs(delta);
+    const kind: 'past' | 'upcoming' = delta < 0 ? 'past' : 'upcoming';
+    const closer = abs < bestAbs;
+    const tiePreferPast = abs === bestAbs && kind === 'past' && bestKind === 'upcoming';
+    if (closer || tiePreferPast) {
+      bestDate = date;
+      bestAbs = abs;
+      bestKind = kind;
+    }
+  }
+
+  return bestDate ? { rowKey: bestDate, kind: bestKind } : { rowKey: null, kind: null };
+}
+
 /**
  * All activities for list view: every row from the store for selected sessions,
  * filtered like grid ({@link shouldIncludeActivity}), deduped across sessions, sorted by startDate.

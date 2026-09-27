@@ -87,4 +87,29 @@ describe("zaraz", () => {
       view: "grid",
     });
   });
+
+  it("forwards go to today events from the floating Today button", () => {
+    const track = vi.fn().mockResolvedValue(undefined);
+    window.zaraz = { track };
+
+    trackZarazEvent(ZARAZ_EVENTS.goToToday, {
+      view: "list",
+      program: "Degree",
+      program_group: "B",
+      calendar_session_id: "B-20262",
+      calendar_session_ids: "B-20262,B-20264",
+      date: "2026-09-27",
+      source: "today_fab",
+    });
+
+    expect(track).toHaveBeenCalledWith("go_to_today", {
+      view: "list",
+      program: "Degree",
+      program_group: "B",
+      calendar_session_id: "B-20262",
+      calendar_session_ids: "B-20262,B-20264",
+      date: "2026-09-27",
+      source: "today_fab",
+    });
+  });
 });
