@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { ViewMode } from "@/app/page";
 import { listMonthKeyFromIsoDate } from "@/lib/public-holidays-for-view";
+import type { ProgramValue } from "@/lib/route-utils";
+import { getGroupFromProgram } from "@/lib/session-memory";
 import { trackZarazEvent, ZARAZ_EVENTS } from "@/lib/zaraz";
 
 const SCROLL_SETTLE_MS = 150;
@@ -154,8 +156,11 @@ export function useCalendarTodayFab({
     trackZarazEvent(ZARAZ_EVENTS.goToToday, {
       view: viewMode,
       program,
+      program_group: getGroupFromProgram(program as ProgramValue),
+      calendar_session_id: sessionIds[0],
       calendar_session_ids: sessionIds.join(","),
       date: todayStr,
+      source: "today_fab",
     });
   }, [viewMode, todayStr, program, sessionIds]);
 
