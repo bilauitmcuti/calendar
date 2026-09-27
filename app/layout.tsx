@@ -11,6 +11,7 @@ import { GeistSans } from "geist/font/sans"
 import { GeistMono } from "geist/font/mono"
 import { cn } from "@/lib/utils"
 import { buildSiteNavigationSchemaElements, HOMEPAGE_SEO_DESCRIPTION } from '@/lib/page-seo'
+import { SITE_ICON_METADATA, SITE_NAME, SITE_WEBSITE_ID } from '@/lib/site-branding'
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://bilauitmcuti.com'),
@@ -18,9 +19,9 @@ export const metadata: Metadata = {
     default: 'Bila UiTM Cuti',
     template: '%s',
   },
-  applicationName: 'Bila UiTM Cuti',
+  applicationName: SITE_NAME,
   other: {
-    'site_name': 'Bila UiTM Cuti',
+    site_name: SITE_NAME,
   },
   description: HOMEPAGE_SEO_DESCRIPTION,
   keywords: ['UiTM', 'academic calendar', 'registration', 'examination', 'lectures', 'holidays', 'Malaysia', 'Universiti Teknologi MARA', 'UiTM student app', 'Bila UiTM Cuti', 'Cuti UiTM', 'Jadual UiTM', 'Kalendar UiTM', 'Kalendar Akademik UiTM', 'Academic Calendar UiTM', 'jadual akademik UiTM', 'cuti semester UiTM', 'tarikh peperiksaan UiTM', 'tarikh pendaftaran UiTM', 'kuliah UiTM', 'uitm cuti', 'uitm cuti bila', 'bila cuti uitm', 'cuti uitm 2026', 'cuti uitm 2027', 'kalendar cuti uitm'],
@@ -49,7 +50,7 @@ export const metadata: Metadata = {
     canonical: 'https://bilauitmcuti.com',
   },
   openGraph: {
-    siteName: 'Bila UiTM Cuti',
+    siteName: SITE_NAME,
     title: 'Bila UiTM Cuti',
     description: HOMEPAGE_SEO_DESCRIPTION,
     type: 'website',
@@ -70,26 +71,7 @@ export const metadata: Metadata = {
     description: HOMEPAGE_SEO_DESCRIPTION,
     images: ['https://bilauitmcuti.com/og/main.png'],
   },
-  icons: {
-    icon: [
-      { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
-      { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
-      { url: '/favicon.ico' },
-    ],
-    apple: '/apple-touch-icon.png',
-    other: [
-      {
-        rel: 'icon',
-        url: '/favicon-16x16.png',
-        sizes: '16x16',
-      },
-      {
-        rel: 'icon',
-        url: '/favicon-32x32.png',
-        sizes: '32x32',
-      },
-    ],
-  },
+  icons: SITE_ICON_METADATA,
 }
 
 export const viewport: Viewport = {
@@ -118,8 +100,8 @@ export default function RootLayout({
         <meta name="color-scheme" content="light dark" />
         <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
         <meta name="theme-color" content="#1a1a1a" media="(prefers-color-scheme: dark)" />
-        <meta name="application-name" content="Bila UiTM Cuti" />
-        <meta property="og:site_name" content="Bila UiTM Cuti" />
+        <meta name="application-name" content={SITE_NAME} />
+        <meta property="og:site_name" content={SITE_NAME} />
         <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
         <meta name="apple-mobile-web-app-title" content="Bila UiTM Cuti" />
         <link rel="manifest" href="/manifest.json" />
@@ -141,7 +123,7 @@ export default function RootLayout({
                 },
                 {
                   '@type': 'WebSite',
-                  '@id': 'https://bilauitmcuti.com/#website',
+                  '@id': SITE_WEBSITE_ID,
                   url: 'https://bilauitmcuti.com',
                   name: 'Bila UiTM Cuti',
                   alternateName: ['Bila UiTM Cuti', 'Cuti UiTM', 'Kalendar Akademik UiTM'],

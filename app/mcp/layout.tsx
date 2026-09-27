@@ -1,6 +1,9 @@
 import type { Metadata } from 'next';
 
+import { SITE_BRANDING_METADATA, SITE_NAME } from '@/lib/site-branding';
+
 export const metadata: Metadata = {
+  ...SITE_BRANDING_METADATA,
   title: 'MCP Server — Bila UiTM Cuti',
   description:
     'Connect Claude and other AI assistants to the Bila UiTM Cuti MCP server — read-only UiTM academic calendar and Malaysia public holidays.',
@@ -8,7 +11,7 @@ export const metadata: Metadata = {
     canonical: 'https://bilauitmcuti.com/mcp',
   },
   openGraph: {
-    siteName: 'Bila UiTM Cuti',
+    siteName: SITE_NAME,
     title: 'MCP Server — Bila UiTM Cuti',
     description:
       'Use the Bila UiTM Cuti MCP server with Claude to ask about UiTM academic calendar dates and Malaysia public holidays.',

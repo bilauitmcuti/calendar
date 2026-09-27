@@ -1,3 +1,5 @@
+import { SITE_WEBSITE_JSON_LD_REF } from "@/lib/site-branding";
+
 interface PageSeoBreadcrumb {
   name: string;
   item: string;
@@ -17,7 +19,7 @@ export function PageSeoBlock({ heading, description, url, breadcrumbs }: PageSeo
       name: heading,
       url,
       description,
-      isPartOf: { '@type': 'WebSite', name: 'Bila UiTM Cuti', url: 'https://bilauitmcuti.com' },
+      isPartOf: SITE_WEBSITE_JSON_LD_REF,
     },
   ];
 

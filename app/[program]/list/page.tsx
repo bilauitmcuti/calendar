@@ -9,6 +9,7 @@ import {
   getProgramPageTitle,
 } from '@/lib/program-seo';
 import { buildCalendarPageMetadata } from '@/lib/calendar-seo-metadata';
+import { SITE_WEBSITE_JSON_LD_REF } from '@/lib/site-branding';
 import type { Metadata } from 'next';
 
 export const dynamic = 'force-dynamic';
@@ -70,7 +71,7 @@ function ProgramListJsonLd({ program }: { program: string }) {
               "name": title,
               "url": canonical,
               "description": description,
-              "isPartOf": { "@type": "WebSite", "name": "Bila UiTM Cuti", "url": "https://bilauitmcuti.com" },
+              "isPartOf": SITE_WEBSITE_JSON_LD_REF,
             },
           ],
         }),

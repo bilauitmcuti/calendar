@@ -1,4 +1,5 @@
 import { resolveCalendarSeoFromPathname } from "@/lib/calendar-seo-metadata";
+import { SITE_NAME } from "@/lib/site-branding";
 import { hasFilterQueryParams } from "@/lib/filter-query";
 import { hasSessionQueryParams } from "@/lib/session-query";
 
@@ -74,13 +75,15 @@ export function syncPageDocumentSeo(pathname?: string): void {
     description
   );
 
-  for (const property of ["og:title", "og:description", "og:image"] as const) {
+  for (const property of ["og:site_name", "og:title", "og:description", "og:image"] as const) {
     const content =
-      property === "og:title"
-        ? title
-        : property === "og:description"
-          ? description
-          : coverImage;
+      property === "og:site_name"
+        ? SITE_NAME
+        : property === "og:title"
+          ? title
+          : property === "og:description"
+            ? description
+            : coverImage;
     upsertMetaContent(
       `meta[property="${property}"]`,
       () => {

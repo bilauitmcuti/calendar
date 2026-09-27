@@ -109,6 +109,18 @@ describe("buildCalendarPageMetadata list routes", () => {
     );
   });
 
+  it("includes site branding metadata on program routes", () => {
+    const metadata = buildCalendarPageMetadata({
+      pathname: "/bachelor",
+      viewMode: "grid",
+      programSlug: "bachelor",
+      searchParams: {},
+    });
+    expect(metadata.applicationName).toBe("Bila UiTM Cuti");
+    expect(metadata.other?.site_name).toBe("Bila UiTM Cuti");
+    expect(metadata.openGraph?.siteName).toBe("Bila UiTM Cuti");
+  });
+
   it("uses list cover image for list viewMode", () => {
     const metadata = buildCalendarPageMetadata({
       pathname: "/list",

@@ -18,6 +18,7 @@ import {
   HOMEPAGE_SEO_TITLE,
   SITE_ORIGIN,
 } from "@/lib/page-seo";
+import { SITE_BRANDING_METADATA, SITE_NAME } from "@/lib/site-branding";
 const GRID_COVER = `${SITE_ORIGIN}/og/main.png`;
 const LIST_COVER = `${SITE_ORIGIN}/og/list.png`;
 
@@ -135,11 +136,12 @@ export function buildCalendarPageMetadata(options: CalendarSeoOptions): Metadata
       : canonical;
 
   const metadata: Metadata = {
+    ...SITE_BRANDING_METADATA,
     title,
     description,
     alternates: { canonical },
     openGraph: {
-      siteName: "Bila UiTM Cuti",
+      siteName: SITE_NAME,
       title,
       description,
       type: "website",
