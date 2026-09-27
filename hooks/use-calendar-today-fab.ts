@@ -95,9 +95,14 @@ export function useCalendarTodayFab({
     attach();
     const frame = requestAnimationFrame(attach);
 
+    const mql = window.matchMedia("(min-width: 768px)");
+    const onLayoutChange = () => attach();
+    mql.addEventListener("change", onLayoutChange);
+
     return () => {
       cancelled = true;
       cancelAnimationFrame(frame);
+      mql.removeEventListener("change", onLayoutChange);
       observer?.disconnect();
     };
   }, [viewMode, todayStr, todayInRange, listTodayAnchorKey, anchorVersion]);

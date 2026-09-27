@@ -3,6 +3,10 @@
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 import type { ViewMode } from "@/app/page";
+import {
+  useCalendarCommittedProgram,
+  useCalendarCommittedSessions,
+} from "@/components/calendar-data-gate";
 import { useCalendarHydrationVersion } from "@/components/calendar-hydration-context";
 import { usePublicHolidaysForSessions } from "@/components/calendar/use-public-holidays-for-sessions";
 import { Button } from "@/components/ui/button";
@@ -79,6 +83,8 @@ export function CalendarTodayFab({
     return () => clearInterval(interval);
   }, []);
 
+  const calendarDataProgram = useCalendarCommittedProgram();
+  const calendarDataSessions = useCalendarCommittedSessions();
   const hydrationServerVersion = useCalendarHydrationVersion();
   const calendarDataVersion = useSyncExternalStore(
     subscribe,
@@ -88,7 +94,7 @@ export function CalendarTodayFab({
 
   const monthOptions = useMemo<GetMonthsOptions>(
     () => ({
-      selectedProgram,
+      selectedProgram: calendarDataProgram,
       showRegistration,
       showLecture,
       showExamination,
@@ -99,7 +105,7 @@ export function CalendarTodayFab({
       showKKT,
     }),
     [
-      selectedProgram,
+      calendarDataProgram,
       showRegistration,
       showLecture,
       showExamination,
@@ -113,9 +119,9 @@ export function CalendarTodayFab({
 
   const todayInRange = useMemo(() => {
     if (calendarDataVersion < 0) return false;
-    const months = getMonthsForSessions(selectedSessions, monthOptions);
+    const months = getMonthsForSessions(calendarDataSessions, monthOptions);
     return isTodayInSessionRange(todayStr, months);
-  }, [calendarDataVersion, selectedSessions, monthOptions, todayStr]);
+  }, [calendarDataVersion, calendarDataSessions, monthOptions, todayStr]);
 
   const buttonRef = useRef<HTMLButtonElement>(null);
   const [isMounted, setIsMounted] = useState(false);
@@ -126,7 +132,7 @@ export function CalendarTodayFab({
 
   const listFilterOptions = useMemo<ActivityFilterOptions>(
     () => ({
-      selectedProgram,
+      selectedProgram: calendarDataProgram,
       showRegistration,
       showLecture,
       showSemesterPendek,
@@ -136,7 +142,7 @@ export function CalendarTodayFab({
       showBreak,
     }),
     [
-      selectedProgram,
+      calendarDataProgram,
       showRegistration,
       showLecture,
       showSemesterPendek,
@@ -148,7 +154,7 @@ export function CalendarTodayFab({
   );
 
   const holidaysByDateAll = usePublicHolidaysForSessions(
-    selectedSessions,
+    calendarDataSessions,
     showKKT,
     initialPublicHolidaysByYear,
     calendarDataVersion
@@ -158,29 +164,29 @@ export function CalendarTodayFab({
   const listTodayAnchorKey = useMemo(() => {
     if (viewMode !== "list" || !todayStr || calendarDataVersion < 0) return null;
     const uniqueActivities = getUniqueListActivities(
-      getActivitiesForList(selectedSessions, listFilterOptions),
-      selectedProgram === "All"
+      getActivitiesForList(calendarDataSessions, listFilterOptions),
+      calendarDataProgram === "All"
     );
     return resolveListTodayAnchorKey(uniqueActivities, holidaysByDate, todayStr, showKKT).rowKey;
   }, [
     viewMode,
     todayStr,
     calendarDataVersion,
-    selectedSessions,
+    calendarDataSessions,
     listFilterOptions,
-    selectedProgram,
+    calendarDataProgram,
     holidaysByDate,
     showKKT,
   ]);
 
-  const sessionKey = selectedSessions.join(",");
+  const sessionKey = calendarDataSessions.join(",");
   const { shouldShow, scrollToToday } = useCalendarTodayFab({
     viewMode,
     todayStr,
     todayInRange,
     listTodayAnchorKey,
-    program: selectedProgram,
-    sessionIds: selectedSessions,
+    program: calendarDataProgram,
+    sessionIds: calendarDataSessions,
     anchorVersion: `${calendarDataVersion}|${viewMode}|${sessionKey}|${todayStr}|${listTodayAnchorKey ?? "none"}`,
   });
 
@@ -239,9 +245,9 @@ export function CalendarTodayFab({
         transitionProperty: "translate, opacity",
         transitionDuration: "300ms",
         transitionTimingFunction: "cubic-bezier(0.23, 1, 0.32, 1)",
-        transform: shouldShow
-          ? "translateX(-50%) translateY(0)"
-          : "translateX(-50%) translateY(calc(100% + 24px))",
+        translate: shouldShow
+          ? "-50% 0"
+          : "-50% calc(100% + 24px)",
       }}
       className={cn(
         "fixed z-40 rounded-full px-4 shadow-md",
