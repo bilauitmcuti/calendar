@@ -5,9 +5,15 @@ import type { ViewMode } from "@/app/page";
 import { listMonthKeyFromIsoDate } from "@/lib/public-holidays-for-view";
 import type { ProgramValue } from "@/lib/route-utils";
 import { getGroupFromProgram } from "@/lib/session-memory";
+import {
+  DESKTOP_VIEWPORT_QUERY,
+  useDesktopViewport,
+} from "@/lib/use-mobile-viewport";
 import { trackZarazEvent, ZARAZ_EVENTS } from "@/lib/zaraz";
 
 const SCROLL_SETTLE_MS = 150;
+/** Matches FAB height (32px) + gap (24px) in calendar/today-fab.tsx */
+const FAB_FOOTER_ROOT_MARGIN_BOTTOM_PX = 72;
 const IDLE_HIDE_MS = 5000;
 const PROGRAMMATIC_SCROLL_MS = 800;
 
@@ -57,6 +63,8 @@ export function useCalendarTodayFab({
   const [isTodayInView, setIsTodayInView] = useState(true);
   const [isScrolling, setIsScrolling] = useState(false);
   const [idleHidden, setIdleHidden] = useState(false);
+  const [footerObscuresFab, setFooterObscuresFab] = useState(false);
+  const isCompactViewport = !useDesktopViewport();
   const programmaticScrollRef = useRef(false);
 
   useEffect(() => {
@@ -106,6 +114,48 @@ export function useCalendarTodayFab({
       observer?.disconnect();
     };
   }, [viewMode, todayStr, todayInRange, listTodayAnchorKey, anchorVersion]);
+
+  useEffect(() => {
+    let cancelled = false;
+    let observer: IntersectionObserver | null = null;
+
+    const attach = () => {
+      observer?.disconnect();
+      observer = null;
+      const footer = document.querySelector("[data-site-footer]");
+      if (!footer) {
+        if (!cancelled) setFooterObscuresFab(false);
+        return;
+      }
+      observer = new IntersectionObserver(
+        ([entry]) => {
+          if (cancelled || !entry) return;
+          setFooterObscuresFab(entry.isIntersecting);
+        },
+        {
+          threshold: 0,
+          rootMargin: `0px 0px -${FAB_FOOTER_ROOT_MARGIN_BOTTOM_PX}px 0px`,
+        }
+      );
+      observer.observe(footer);
+    };
+
+    attach();
+    const frame = requestAnimationFrame(attach);
+
+    const desktopMql = window.matchMedia(DESKTOP_VIEWPORT_QUERY);
+    const onLayoutChange = () => attach();
+    desktopMql.addEventListener("change", onLayoutChange);
+    window.addEventListener("resize", onLayoutChange);
+
+    return () => {
+      cancelled = true;
+      cancelAnimationFrame(frame);
+      desktopMql.removeEventListener("change", onLayoutChange);
+      window.removeEventListener("resize", onLayoutChange);
+      observer?.disconnect();
+    };
+  }, []);
 
   useEffect(() => {
     let settleTimer: ReturnType<typeof setTimeout> | null = null;
@@ -170,7 +220,9 @@ export function useCalendarTodayFab({
   }, [viewMode, todayStr, program, sessionIds]);
 
   const canShow = viewMode === "list" ? Boolean(listTodayAnchorKey) : todayInRange;
-  const shouldShow = canShow && !isTodayInView && !isScrolling && !idleHidden;
+  const footerHide = isCompactViewport && footerObscuresFab;
+  const shouldShow =
+    canShow && !isTodayInView && !isScrolling && !idleHidden && !footerHide;
 
   return { shouldShow, scrollToToday };
 }
