@@ -93,9 +93,9 @@ importers:
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1
-      clsx:
-        specifier: ^2.1.1
-        version: 2.1.1
+      cn:
+        specifier: ^0.5.0
+        version: 0.5.0
       geist:
         specifier: ^1.7.2
         version: 1.7.2(next@16.3.1(@babel/core@8.0.1)(@types/node@22.19.11)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))
@@ -117,9 +117,6 @@ importers:
       sonner:
         specifier: ^1.7.4
         version: 1.7.4(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
-      tailwind-merge:
-        specifier: ^3.3.1
-        version: 3.4.0
     devDependencies:
       '@cloudflare/next-on-pages':
         specifier: ^1.13.16
@@ -2066,6 +2063,11 @@ packages:
   clsx@2.1.1:
     resolution: {integrity: sha512-eYm0QWBtUrBWZWG0d386OGAw16Z995PiOVo2B7bjWSbHedGl5e0ZWaq65kOGgUSNesEIDkB9ISbTg/JK9dhCZA==}
     engines: {node: '>=6'}
+
+  cn@0.5.0:
+    resolution: {integrity: sha512-JGEixZEpfFXm1P5uXwvEobOFLlHwIWi5v4tjd1ZwfiYmcEilkuD2l+054rvJcYCR1B+uVThHeUbgmNz1FwuxuA==}
+    engines: {node: '>=22'}
+    hasBin: true
 
   code-block-writer@10.1.1:
     resolution: {integrity: sha512-67ueh2IRGst/51p0n6FvPrnRjAGHY5F8xdjkgrYE7DDzpJe6qA07RYQ9VcoUeo5ATOjSOiWpSL3SWBRRbempMw==}
@@ -6487,6 +6489,8 @@ snapshots:
     optional: true
 
   clsx@2.1.1: {}
+
+  cn@0.5.0: {}
 
   code-block-writer@10.1.1: {}
 
