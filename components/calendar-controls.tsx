@@ -606,6 +606,7 @@ export function CalendarControls({
           >
             <IconHint
               label="Calendar"
+              hintOnTouch={false}
               trigger={
                 <Button
                   variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
@@ -621,6 +622,7 @@ export function CalendarControls({
             </IconHint>
             <IconHint
               label="List"
+              hintOnTouch={false}
               trigger={
                 <Button
                   variant={viewMode === 'list' ? 'secondary' : 'ghost'}
@@ -636,6 +638,7 @@ export function CalendarControls({
             </IconHint>
             <IconHint
               label="Chat"
+              hintOnTouch={false}
               nativeButton={false}
               trigger={
                 <Button

@@ -1,6 +1,7 @@
 export function SiteFooter() {
   return (
     <footer
+      data-site-footer=""
       className="mt-8 border-t border-border pt-6 standalone:hidden"
       aria-label="Footer"
     >
