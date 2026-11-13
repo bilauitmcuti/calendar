@@ -158,7 +158,7 @@ export default function McpPage() {
               className="h-[38px] w-fit gap-2"
             >
               <HugeiconsIcon icon={PlayIcon} strokeWidth={2} className="size-4" />
-              Watch how to add the custom connector in Claude
+              Watch on YouTube
             </Button>
           </div>
         </article>
