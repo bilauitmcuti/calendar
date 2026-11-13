@@ -1,7 +1,6 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { HugeiconsIcon } from '@hugeicons/react';
 import { ArrowLeft01Icon, Copy01Icon, PlayIcon, Tick02Icon } from '@hugeicons/core-free-icons';
@@ -73,11 +72,11 @@ export default function McpPage() {
             MCP Server — <BrandName />
           </h1>
           <p>
-            Connect Claude to the <BrandName /> MCP server to ask about the UiTM academic calendar and Malaysia
-            public holidays in plain language.
+            Connect Claude, Grok, Cursor, VS Code, or Codex to a read-only server for the UiTM academic calendar
+            and Malaysia public holidays. There is no API key, and nothing on the calendar can be changed.
           </p>
 
-          <h2>Remote MCP URL</h2>
+          <h2>Server URL</h2>
           <div className="not-typeset mt-[var(--typeset-flow)] relative">
             <Input
               readOnly
@@ -97,74 +96,69 @@ export default function McpPage() {
               <HugeiconsIcon icon={copied ? Tick02Icon : Copy01Icon} strokeWidth={2} className="size-4" />
             </Button>
           </div>
+          <p>Hosted. Streamable HTTP. No sign-in.</p>
 
-          <h2>Add it to Claude</h2>
+          <h2>Quick start</h2>
+          <ol>
+            <li>Add the URL in your client.</li>
+            <li>Restart the client, or refresh the tools list, so the six tools show up.</li>
+            <li>Ask something like &ldquo;List Malaysia public holidays in Selangor for 2026.&rdquo;</li>
+          </ol>
+
+          <h2>In chat</h2>
           <p>
-            In Claude, go to <strong>Customize → Connectors</strong>, click <strong>Add custom connector</strong>,
-            paste the URL above, and set authentication to <strong>None</strong>. Then enable it per conversation
-            from the <strong>+</strong> menu → <strong>Connectors</strong>.
+            <strong>Claude.</strong> Open{' '}
+            <a href="https://claude.ai/plugins" target="_blank" rel="noopener noreferrer">
+              claude.ai/plugins
+            </a>{' '}
+            and choose <strong>Add custom connector</strong>. Name it Bila UiTM Cuti, paste the server URL, leave
+            authentication as None, then turn it on in the chat.
+          </p>
+          <p>
+            <strong>Grok.</strong> Open{' '}
+            <a href="https://grok.com/connectors" target="_blank" rel="noopener noreferrer">
+              grok.com/connectors
+            </a>
+            , then New Connector, Custom, and paste the URL. If it asks, pick None.
+          </p>
+          <p>
+            <strong>Grok Bot.</strong> In chat, send{' '}
+            <code>Add this MCP server: {MCP_SERVER_URL}</code>. Confirm the name and URL. Tools show up on the next
+            message.
           </p>
 
-          <div className="not-typeset mt-[var(--typeset-flow)] flex flex-col gap-6">
-            <figure className="flex flex-col items-center gap-2">
-              <Image
-                src="/image/claude-enable-connector.webp"
-                alt="Adding the Bila UiTM Cuti custom connector in Claude"
-                width={1280}
-                height={720}
-                className="h-auto w-full rounded-lg ring-1 ring-border"
-              />
-              <span className="text-center text-xs text-muted-foreground">
-                Add the custom connector and paste the MCP URL.
-              </span>
-            </figure>
-            <figure className="flex flex-col items-center gap-2">
-              <Image
-                src="/image/claude-add-custom-connector.webp"
-                alt="Enabling the Bila UiTM Cuti custom connector in a Claude conversation"
-                width={1280}
-                height={720}
-                className="h-auto w-full rounded-lg ring-1 ring-border"
-              />
-              <span className="text-center text-xs text-muted-foreground">
-                Enable the connector for your conversation.
-              </span>
-            </figure>
-          </div>
-
-          <h2>Try it on Grok Bot</h2>
+          <h2>In an editor</h2>
           <p>
-            Want an instant assistant already set up? Add the <BrandName /> bot on Grok to get answers about lectures, cuti, exams, registration, and public holidays—no connector setup needed.
-            <br />
-            <br />
-            <strong>Note:</strong> A paid subscription is required to use the Grok bot.
+            Cursor, Claude Code, VS Code, Codex, and OpenCode use the same URL. Config files and commands are on
+            the{' '}
+            <a href="https://docs.bilauitmcuti.com/mcp-server" target="_blank" rel="noopener noreferrer">
+              MCP docs
+            </a>
+            .
           </p>
-          <div className="not-typeset mt-[var(--typeset-flow)]">
-            <Button
-              render={
-                <a
-                  href="https://x.ai/bot/NdfYE7nsqkzFLbgVmWx1U"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                />
-              }
-              nativeButton={false}
-              className="h-[38px] w-fit"
-            >
-              Add to Grok Bot
-            </Button>
-          </div>
 
-          <h2>Need more help?</h2>
-          <p>Watch the step-by-step video tutorial for adding the connector in Claude.</p>
+          <h2>What you can ask</h2>
+          <ul>
+            <li>When does lecture week 1 start for session B-20264?</li>
+            <li>Is 2026-03-09 a class day for Group B Diploma?</li>
+            <li>List Malaysia public holidays in Selangor for 2026.</li>
+            <li>What UiTM sessions are available for Group A?</li>
+          </ul>
+          <p>
+            The server can read sessions and activities, the 14 lecture weeks, whether a date is a class day, break,
+            exam week, or study week, and public holidays by year and state. Calls follow the public API limit of
+            500 requests a minute per IP.
+          </p>
+
+          <h2>Video</h2>
           <div className="not-typeset mt-[var(--typeset-flow)]">
             <Button
-              render={<a href="https://youtu.be/P4Gm59-Je-4" target="_blank" rel="noopener noreferrer" />}
+              render={<a href="https://youtu.be/q-WjGOBagkc" target="_blank" rel="noopener noreferrer" />}
               nativeButton={false}
               className="h-[38px] w-fit gap-2"
             >
               <HugeiconsIcon icon={PlayIcon} strokeWidth={2} className="size-4" />
-              Watch video tutorial
+              Watch on YouTube
             </Button>
           </div>
         </article>
