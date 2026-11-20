@@ -41,9 +41,10 @@ import {
   type MonthFilterState,
 } from "@/components/month-calendar/pack-spans";
 import {
-  earliestActivityDate,
   monthForSessionChange,
-  sessionContainsToday,
+  planSessionArrival,
+  readCarriedSessionFocus,
+  writeCarriedSessionFocus,
 } from "@/components/month-calendar/session-focus";
 
 const headerButtonClass =
@@ -68,8 +69,9 @@ export function MonthPage({ payload }: MonthPageProps) {
   const pendingFilterFocus = useRef(false);
   const pendingDrawerFilter = useRef(false);
   const pendingSessionId = useRef<string | null>(null);
+  const appliedArrival = useRef({ month: payload.month, sessionId: payload.sessionId });
   const playedContentFade = useRef(0);
-  const [contentFade, setContentFade] = useState(false);
+  const [fadeOut, setFadeOut] = useState(false);
 
   const spans = useMemo(
     () => buildMonthSpans(payload.activities, payload.holidays),
@@ -109,6 +111,7 @@ export function MonthPage({ payload }: MonthPageProps) {
 
   const changeSession = useCallback((sessionId: string) => {
     if (sessionId === payload.sessionId) return;
+    markMonthContentFade();
     pendingSessionId.current = sessionId;
     const option = payload.sessionOptions.find((item) => item.id === sessionId);
     const month = monthForSessionChange({
@@ -138,34 +141,37 @@ export function MonthPage({ payload }: MonthPageProps) {
 
   useEffect(() => {
     setDayOpen(false);
-    const pending = pendingSessionId.current;
-    if (pending == null || pending !== payload.sessionId) {
-      setSelectedDate(initialDate(payload.month, payload.today, payload.focusDate));
+    const arrivalChanged =
+      appliedArrival.current.month !== payload.month ||
+      appliedArrival.current.sessionId !== payload.sessionId;
+    appliedArrival.current = { month: payload.month, sessionId: payload.sessionId };
+    const plan = planSessionArrival({
+      pendingSessionId: pendingSessionId.current,
+      carried: readCarriedSessionFocus(),
+      sessionId: payload.sessionId,
+      month: payload.month,
+      today: payload.today,
+      defaultSessionId,
+      activities: payload.activities,
+      focusDate: payload.focusDate,
+      arrivalChanged,
+    });
+    if (plan.action === "navigate") {
+      writeCarriedSessionFocus(plan.carry);
+      router.replace(
+        buildMonthHref(payload.program, payload.view, plan.month, payload.sessionId, {
+          today: payload.today,
+          defaultSessionId,
+        }),
+        { scroll: false }
+      );
       return;
     }
-    const isCurrent =
-      payload.sessionId === defaultSessionId || sessionContainsToday(payload.activities, payload.today);
-    const start = isCurrent ? payload.today : earliestActivityDate(payload.activities);
-    if (start) {
-      const month = start.slice(0, 7);
-      if (payload.month !== month) {
-        router.replace(
-          buildMonthHref(payload.program, payload.view, month, payload.sessionId, {
-            today: payload.today,
-            defaultSessionId,
-          }),
-          { scroll: false }
-        );
-        return;
-      }
-      setSelectedDate(dateInMonthGrid(payload.month, start) ? start : `${payload.month}-01`);
-    } else {
-      setSelectedDate(initialDate(payload.month, payload.today, payload.focusDate));
-    }
-    const timeout = window.setTimeout(() => {
-      if (pendingSessionId.current === payload.sessionId) pendingSessionId.current = null;
-    }, 0);
-    return () => window.clearTimeout(timeout);
+    if (plan.action === "keep") return;
+    setSelectedDate(plan.date);
+    if (!plan.clearPending) return;
+    if (pendingSessionId.current === payload.sessionId) pendingSessionId.current = null;
+    if (readCarriedSessionFocus()?.sessionId === payload.sessionId) writeCarriedSessionFocus(null);
   }, [
     defaultSessionId,
     payload.activities,
@@ -181,13 +187,27 @@ export function MonthPage({ payload }: MonthPageProps) {
   useEffect(() => {
     const nonce = readMonthContentFadeNonce();
     if (nonce === 0 || nonce === playedContentFade.current) return;
-    setContentFade(false);
-    const frame = requestAnimationFrame(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       playedContentFade.current = nonce;
-      setContentFade(true);
+      setFadeOut(false);
+      return;
+    }
+    setFadeOut(true);
+    let finished = false;
+    let fadeInFrame = 0;
+    const fadeOutFrame = requestAnimationFrame(() => {
+      fadeInFrame = requestAnimationFrame(() => {
+        finished = true;
+        playedContentFade.current = nonce;
+        setFadeOut(false);
+      });
     });
-    return () => cancelAnimationFrame(frame);
-  }, [payload.month, payload.view]);
+    return () => {
+      cancelAnimationFrame(fadeOutFrame);
+      cancelAnimationFrame(fadeInFrame);
+      if (!finished) setFadeOut(false);
+    };
+  }, [payload.month, payload.sessionId, payload.view]);
 
   const goToMonth = useCallback((month: string) => {
     router.push(
@@ -447,7 +467,10 @@ export function MonthPage({ payload }: MonthPageProps) {
               </Button>
             )}
           </header>
-          <div className={cn("flex min-h-0 flex-1 gap-2", contentFade && "month-content-fade")}>
+          <div
+            className="month-content flex min-h-0 flex-1 gap-2"
+            data-fade={fadeOut ? "out" : undefined}
+          >
             <div className="flex min-h-0 min-w-0 flex-1 flex-col">
               {payload.view === "grid" ? (
                 <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto min-[560px]:overflow-hidden">
