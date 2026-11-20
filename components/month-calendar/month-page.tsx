@@ -331,7 +331,7 @@ export function MonthPage({ payload }: MonthPageProps) {
       ) : null}
       <div
         className={cn(
-          "grid min-h-0 flex-1 grid-cols-1 gap-2 bg-muted p-2",
+          "grid min-h-0 flex-1 grid-cols-1 gap-0 bg-muted p-0 min-[900px]:gap-2 min-[900px]:p-2",
           sidebarDocked && "min-[900px]:grid-cols-[16rem_minmax(0,1fr)]"
         )}
       >
@@ -355,7 +355,7 @@ export function MonthPage({ payload }: MonthPageProps) {
           />
         </aside>
         <main className="flex min-h-0 min-w-0 flex-col">
-          <header className="flex h-12 shrink-0 items-center gap-1 px-1">
+          <header className="flex h-12 shrink-0 items-center gap-1 bg-card px-1 min-[900px]:bg-transparent">
             {sidebarDocked ? (
               <Button
                 type="button"
@@ -568,7 +568,7 @@ function monthEnterFrom(from: string, to: string): "next" | "prev" | null {
 }
 
 const monthStageShellClass =
-  "flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-xl border border-border bg-card min-[1080px]:flex-row";
+  "flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-card min-[900px]:rounded-xl min-[900px]:border min-[900px]:border-border min-[1080px]:flex-row";
 
 function monthStageDayAsideClass(dayDocked: boolean, view: MonthView) {
   return cn(
