@@ -7,13 +7,14 @@ export type ViewMode = 'list' | 'grid';
 
 
 import { CalendarWrapper } from '@/components/calendar-wrapper';
+import { CalendarSeoLinks } from '@/components/calendar-seo-links';
 import { PageSeoBlock } from '@/components/page-seo-block';
 import {
   HOMEPAGE_SEO_DESCRIPTION,
+  HOMEPAGE_SEO_SUBHEADINGS,
   HOMEPAGE_SEO_TITLE,
   SITE_ORIGIN,
 } from '@/lib/page-seo';
-import Link from 'next/link';
 
 interface HomeMetadataProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -36,23 +37,9 @@ export default function Page() {
         heading={HOMEPAGE_SEO_TITLE}
         description={HOMEPAGE_SEO_DESCRIPTION}
         url={SITE_ORIGIN}
+        subheadings={HOMEPAGE_SEO_SUBHEADINGS}
       />
-      <nav aria-label="Program shortcuts" className="sr-only">
-        <ul>
-          <li>
-            <Link href="/diploma">Diploma</Link>
-          </li>
-          <li>
-            <Link href="/bachelor">Bachelor</Link>
-          </li>
-          <li>
-            <Link href="/master">Master</Link>
-          </li>
-          <li>
-            <Link href="/phd">PhD</Link>
-          </li>
-        </ul>
-      </nav>
+      <CalendarSeoLinks listHref="/list" />
       <CalendarWrapper viewMode="grid" programFromRoute="All" />
     </>
   );

@@ -8,9 +8,16 @@ interface PageSeoBlockProps {
   description: string;
   url: string;
   breadcrumbs?: PageSeoBreadcrumb[];
+  subheadings?: readonly string[];
 }
 
-export function PageSeoBlock({ heading, description, url, breadcrumbs }: PageSeoBlockProps) {
+export function PageSeoBlock({
+  heading,
+  description,
+  url,
+  breadcrumbs,
+  subheadings,
+}: PageSeoBlockProps) {
   const graph: Record<string, unknown>[] = [
     {
       '@type': 'WebPage',
@@ -38,6 +45,9 @@ export function PageSeoBlock({ heading, description, url, breadcrumbs }: PageSeo
   return (
     <section className="sr-only" aria-label="Ringkasan halaman">
       <h1>{heading}</h1>
+      {subheadings?.map((subheading) => (
+        <h2 key={subheading}>{subheading}</h2>
+      ))}
       <p>{description}</p>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd }} />
     </section>

@@ -1,7 +1,7 @@
 {
   "name": "Bila UiTM Cuti",
   "short_name": "Bila UiTM Cuti",
-  "description": "UiTM academic calendar for 2026. View registration, lecture, examination dates and break periods.",
+  "description": "UiTM academic calendar. View registration, lecture, examination dates and break periods.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

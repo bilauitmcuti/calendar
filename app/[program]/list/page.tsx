@@ -1,13 +1,17 @@
 export const runtime = 'edge';
 
+import { CalendarSeoLinks } from '@/components/calendar-seo-links';
 import { CalendarWrapper } from '@/components/calendar-wrapper';
+import { PageSeoBlock } from '@/components/page-seo-block';
 import { notFound } from 'next/navigation';
 import { isValidProgramRoute, getProgramDisplayName } from '@/lib/route-utils';
 import {
+  getProgramCanonicalUrl,
   getProgramListCanonicalUrl,
+  getProgramListPageTitle,
   getProgramListSeoDescription,
-  getProgramPageTitle,
 } from '@/lib/program-seo';
+import { SITE_ORIGIN } from '@/lib/page-seo';
 import { buildCalendarPageMetadata } from '@/lib/calendar-seo-metadata';
 import type { Metadata } from 'next';
 
@@ -46,36 +50,22 @@ export async function generateMetadata({
   });
 }
 
-function ProgramListJsonLd({ program }: { program: string }) {
+function ProgramListSeo({ program }: { program: string }) {
   const programName = getProgramDisplayName(program);
-  const title = getProgramPageTitle(program);
-  const description = getProgramListSeoDescription(program);
-  const canonical = getProgramListCanonicalUrl(program);
   return (
-    <script
-      type="application/ld+json"
-      dangerouslySetInnerHTML={{
-        __html: JSON.stringify({
-          "@context": "https://schema.org",
-          "@graph": [
-            {
-              "@type": "BreadcrumbList",
-              "itemListElement": [
-                { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://bilauitmcuti.com" },
-                { "@type": "ListItem", "position": 2, "name": programName, "item": canonical },
-              ],
-            },
-            {
-              "@type": "WebPage",
-              "name": title,
-              "url": canonical,
-              "description": description,
-              "isPartOf": { "@type": "WebSite", "name": "Bila UiTM Cuti", "url": "https://bilauitmcuti.com" },
-            },
-          ],
-        }),
-      }}
-    />
+    <>
+      <PageSeoBlock
+        heading={getProgramListPageTitle(program)}
+        description={getProgramListSeoDescription(program)}
+        url={getProgramListCanonicalUrl(program)}
+        breadcrumbs={[
+          { name: 'Laman Utama', item: SITE_ORIGIN },
+          { name: programName, item: getProgramCanonicalUrl(program) },
+          { name: 'Senarai tarikh', item: getProgramListCanonicalUrl(program) },
+        ]}
+      />
+      <CalendarSeoLinks gridHref={`/${program}`} />
+    </>
   );
 }
 
@@ -92,7 +82,7 @@ export default async function ProgramListPage({
 
   return (
     <>
-      <ProgramListJsonLd program={program} />
+      <ProgramListSeo program={program} />
       <CalendarWrapper viewMode="list" programFromRoute={program} />
     </>
   );
