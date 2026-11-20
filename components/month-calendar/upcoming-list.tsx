@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Layers01Icon } from "@hugeicons/core-free-icons";
 import { cn } from "@/lib/utils";
-import { Empty, EmptyDescription, EmptyHeader, EmptyTitle } from "@/components/ui/empty";
+import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
 import { formatMonthTitle } from "@/components/month-calendar/calendar-style";
 import { MonthEventDetails } from "@/components/month-calendar/month-event-details";
 import { monthType } from "@/components/month-calendar/month-typography";
@@ -22,8 +24,10 @@ export function UpcomingList({ month, today, program, selectedDate, spans, onSel
   const groups = groupUpcoming(spans, month);
   const anchorDate =
     groups.find((group) => group.date >= today)?.date ?? groups[groups.length - 1]?.date;
+  const scrollRef = useRef<HTMLDivElement>(null);
   const todayRef = useRef<HTMLDivElement>(null);
   const scrolled = useRef(false);
+  const isCurrentMonth = month === today.slice(0, 7);
 
   useEffect(() => {
     scrolled.current = false;
@@ -32,24 +36,38 @@ export function UpcomingList({ month, today, program, selectedDate, spans, onSel
   useEffect(() => {
     if (scrolled.current) return;
     scrolled.current = true;
+    const scrollEl = scrollRef.current;
+    if (!scrollEl) return;
+    if (!isCurrentMonth) {
+      scrollEl.scrollTop = 0;
+      return;
+    }
     todayRef.current?.scrollIntoView({ block: "start" });
-  }, [month, anchorDate]);
+  }, [anchorDate, isCurrentMonth, month]);
 
   return (
-    <div className="flex h-full min-h-0 flex-1 flex-col overflow-y-auto bg-card">
-      <div className="mx-auto flex w-full max-w-[1000px] flex-col gap-8 px-4 py-8 sm:px-6 lg:px-4">
+    <div ref={scrollRef} className="flex h-full min-h-0 flex-1 flex-col overflow-y-auto bg-card">
+      <div
+        className={cn(
+          "mx-auto flex w-full max-w-[1000px] flex-col gap-6 px-4 py-3 sm:px-6 lg:px-4",
+          groups.length === 0 && "min-h-full flex-1"
+        )}
+      >
         {groups.length === 0 ? (
-          <Empty className="border-0">
+          <Empty className="min-h-48 flex-1 border-0 bg-transparent py-8">
             <EmptyHeader>
+              <EmptyMedia variant="icon">
+                <HugeiconsIcon icon={Layers01Icon} strokeWidth={2} className="size-6" />
+              </EmptyMedia>
               <EmptyTitle className={monthType.emptyTitle}>No activities match your filters</EmptyTitle>
               <EmptyDescription className={monthType.emptyBody}>
-                Try adjusting the filter toggles above to see registration, lectures, exams, or breaks.
+                Turn on more calendar types in the menu, or switch program or session to see upcoming dates this month.
               </EmptyDescription>
             </EmptyHeader>
           </Empty>
         ) : (
           <div className="flex flex-col gap-4">
-            <div className="-mx-3 scroll-mt-28 pt-3 pb-4">
+            <div className="-mx-3 scroll-mt-28 pt-1 pb-2">
               <h3 className={cn("px-3 text-left", monthType.upcomingMonth)}>{formatMonthTitle(month)}</h3>
             </div>
             {groups.map((group) => (

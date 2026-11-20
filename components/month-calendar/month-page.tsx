@@ -19,7 +19,8 @@ import {
   DrawerDescription,
   DrawerTitle,
 } from "@/components/ui/drawer";
-import { buildMonthHref } from "@/lib/month-routes";
+import { buildMonthHref, type MonthView } from "@/lib/month-routes";
+import { DEFAULT_FILTER_STATES } from "@/lib/data";
 import { getGroupFromProgram } from "@/lib/session-memory";
 import type { MonthCalendarPayload } from "@/lib/month-calendar-types";
 import "@/components/month-calendar/month-motion.css";
@@ -64,26 +65,45 @@ export function MonthPage({ payload }: MonthPageProps) {
   const [dayOpen, setDayOpen] = useState(false);
   const [sidebarDocked, setSidebarDocked] = useState(true);
   const [dayDocked, setDayDocked] = useState(true);
-  const sidebarFilterRef = useRef<HTMLInputElement>(null);
-  const drawerFilterRef = useRef<HTMLInputElement>(null);
-  const pendingFilterFocus = useRef(false);
-  const pendingDrawerFilter = useRef(false);
   const pendingSessionId = useRef<string | null>(null);
+  const selectedDateRef = useRef(selectedDate);
+  selectedDateRef.current = selectedDate;
   const appliedArrival = useRef({ month: payload.month, sessionId: payload.sessionId });
   const playedContentFade = useRef(0);
-  const [fadeOut, setFadeOut] = useState(false);
+  const [frame, setFrame] = useState(payload);
+  const [ghost, setGhost] = useState<{ payload: MonthCalendarPayload; date: string } | null>(null);
+  const [enterFrom, setEnterFrom] = useState<"next" | "prev" | null>(null);
+  const [showKKT, setShowKKT] = useState<boolean>(DEFAULT_FILTER_STATES.showKKT);
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem("showKKT");
+      if (stored) setShowKKT(JSON.parse(stored));
+    } catch {
+      setShowKKT(DEFAULT_FILTER_STATES.showKKT);
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem("showKKT", JSON.stringify(showKKT));
+  }, [showKKT]);
+
+  const hasRegionalDateRange = useMemo(
+    () => payload.activities.some((activity) => activity.regionalStartDate || activity.regionalEndDate),
+    [payload.activities]
+  );
 
   const spans = useMemo(
-    () => buildMonthSpans(payload.activities, payload.holidays),
-    [payload.activities, payload.holidays]
+    () => buildMonthSpans(frame.activities, frame.holidays, showKKT),
+    [frame.activities, frame.holidays, showKKT]
   );
   const visibleSpans = useMemo(
     () => spans.filter((span) => spanMatchesFilter(span, filter)),
     [spans, filter]
   );
   const weeks = useMemo(
-    () => packMonth(visibleSpans, payload.month),
-    [visibleSpans, payload.month]
+    () => packMonth(visibleSpans, frame.month),
+    [visibleSpans, frame.month]
   );
   const daySpans = useMemo(
     () => spansOnDate(visibleSpans, selectedDate),
@@ -185,29 +205,29 @@ export function MonthPage({ payload }: MonthPageProps) {
   ]);
 
   useEffect(() => {
-    const nonce = readMonthContentFadeNonce();
-    if (nonce === 0 || nonce === playedContentFade.current) return;
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      playedContentFade.current = nonce;
-      setFadeOut(false);
+    if (monthContentKey(payload) === monthContentKey(frame)) {
+      if (payload !== frame) setFrame(payload);
       return;
     }
-    setFadeOut(true);
-    let finished = false;
-    let fadeInFrame = 0;
-    const fadeOutFrame = requestAnimationFrame(() => {
-      fadeInFrame = requestAnimationFrame(() => {
-        finished = true;
-        playedContentFade.current = nonce;
-        setFadeOut(false);
-      });
-    });
-    return () => {
-      cancelAnimationFrame(fadeOutFrame);
-      cancelAnimationFrame(fadeInFrame);
-      if (!finished) setFadeOut(false);
-    };
-  }, [payload.month, payload.sessionId, payload.view]);
+    const nonce = readMonthContentFadeNonce();
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const animate = nonce !== playedContentFade.current && !reduce;
+    playedContentFade.current = Math.max(playedContentFade.current, nonce);
+    if (animate) {
+      setGhost({ payload: frame, date: selectedDateRef.current });
+      setEnterFrom(monthEnterFrom(frame.month, payload.month));
+    } else {
+      setGhost(null);
+      setEnterFrom(null);
+    }
+    setFrame(payload);
+  }, [frame, payload]);
+
+  useEffect(() => {
+    if (!ghost) return;
+    const timer = window.setTimeout(() => setGhost(null), 220);
+    return () => window.clearTimeout(timer);
+  }, [ghost]);
 
   const goToMonth = useCallback((month: string) => {
     router.push(
@@ -235,39 +255,9 @@ export function MonthPage({ payload }: MonthPageProps) {
   }, [goToMonth, payload.month, selectedDate]);
 
   const openDayIfNeeded = useCallback(() => {
-    const compact = window.matchMedia("(max-width: 559px)").matches;
     const docked = window.matchMedia("(min-width: 1080px)").matches;
-    if (payload.view === "grid" && compact) return;
     if (docked) setDayDocked(true);
-    else setDayOpen(true);
-  }, [payload.view]);
-
-  const focusFilter = useCallback(() => {
-    const wide = window.matchMedia("(min-width: 900px)").matches;
-    if (!wide) {
-      pendingDrawerFilter.current = true;
-      setSidebarOpen(true);
-      return;
-    }
-    if (sidebarDocked) {
-      sidebarFilterRef.current?.focus();
-      return;
-    }
-    pendingFilterFocus.current = true;
-    setSidebarDocked(true);
-  }, [sidebarDocked]);
-
-  useEffect(() => {
-    if (!sidebarDocked || !pendingFilterFocus.current) return;
-    pendingFilterFocus.current = false;
-    sidebarFilterRef.current?.focus();
-  }, [sidebarDocked]);
-
-  useEffect(() => {
-    if (!sidebarOpen || !pendingDrawerFilter.current) return;
-    pendingDrawerFilter.current = false;
-    drawerFilterRef.current?.focus();
-  }, [sidebarOpen]);
+  }, []);
 
   useEffect(() => {
     function onKeyDown(event: KeyboardEvent) {
@@ -280,16 +270,8 @@ export function MonthPage({ payload }: MonthPageProps) {
         element != null &&
         Boolean(element.closest("a, button, select")) &&
         !element.closest("[role=gridcell]");
-      if (event.key === "/" && !typing) {
-        event.preventDefault();
-        focusFilter();
-        return;
-      }
       if (typing) {
-        if (event.key === "Escape") {
-          if (filter.query) setFilter((current) => ({ ...current, query: "" }));
-          else if (target instanceof HTMLElement) target.blur();
-        }
+        if (event.key === "Escape" && target instanceof HTMLElement) target.blur();
         return;
       }
       if (outsideGrid && event.key !== "Escape" && event.key !== "t" && event.key !== "T") return;
@@ -327,16 +309,7 @@ export function MonthPage({ payload }: MonthPageProps) {
 
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [
-    filter.query,
-    focusFilter,
-    goToMonth,
-    goToToday,
-    moveDays,
-    openDayIfNeeded,
-    payload.month,
-    payload.view,
-  ]);
+  }, [goToMonth, goToToday, moveDays, openDayIfNeeded, payload.month, payload.view]);
 
   function href(month: string, sessionId: string) {
     return monthHref(month, sessionId);
@@ -347,34 +320,36 @@ export function MonthPage({ payload }: MonthPageProps) {
     openDayIfNeeded();
   }
 
-  const lectureWeek = payload.lectureWeekByDate[selectedDate];
+  const lectureWeek = frame.lectureWeekByDate[selectedDate];
 
   return (
-    <div className="flex h-dvh min-h-0 flex-col bg-muted text-foreground">
+    <div className="fixed inset-0 flex min-h-0 flex-col bg-muted text-foreground">
       {payload.error ? (
         <p className={cn("shrink-0 border-b border-border px-4 py-2", monthType.error)}>{payload.error}</p>
       ) : null}
       <div
         className={cn(
-          "grid min-h-0 flex-1 grid-cols-1 gap-2 p-2",
+          "grid min-h-0 flex-1 grid-cols-1 gap-2 bg-muted p-2",
           sidebarDocked && "min-[900px]:grid-cols-[16rem_minmax(0,1fr)]"
         )}
       >
-        <aside className={cn("hidden min-h-0", sidebarDocked && "min-[900px]:flex")}>
+        <aside className={cn("hidden h-full min-h-0 overflow-hidden", sidebarDocked && "min-[900px]:flex")}>
           <MonthSidebar
             program={payload.program}
             view={payload.view}
             month={payload.month}
             sessionId={payload.sessionId}
             sessionOptions={payload.sessionOptions}
+            programOptions={payload.programOptions}
             defaultSession={payload.defaultSession}
             today={payload.today}
             spans={spans}
             filter={filter}
             onFilterChange={setFilter}
             onSessionChange={changeSession}
-            filterInputId="month-filter"
-            filterRef={sidebarFilterRef}
+            showKKT={showKKT}
+            onShowKKTChange={setShowKKT}
+            hasRegionalDateRange={hasRegionalDateRange}
           />
         </aside>
         <main className="flex min-h-0 min-w-0 flex-col">
@@ -410,7 +385,7 @@ export function MonthPage({ payload }: MonthPageProps) {
               <span className="min-[560px]:hidden">{formatMonthShort(payload.month)}</span>
               <span className="hidden min-[560px]:inline">{formatMonthTitle(payload.month)}</span>
             </h1>
-            <Button type="button" variant="ghost" size="sm" className={cn(headerButtonClass, "hidden sm:inline-flex")} onClick={goToToday}>
+            <Button type="button" variant="ghost" size="sm" className={headerButtonClass} onClick={goToToday}>
               Today
             </Button>
             <div className="flex items-center gap-0.5">
@@ -467,40 +442,49 @@ export function MonthPage({ payload }: MonthPageProps) {
               </Button>
             )}
           </header>
-          <div
-            className="month-content flex min-h-0 flex-1 gap-2"
-            data-fade={fadeOut ? "out" : undefined}
-          >
-            <div className="flex min-h-0 min-w-0 flex-1 flex-col">
-              {payload.view === "grid" ? (
-                <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto min-[560px]:overflow-hidden">
-                  <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-border bg-card">
-                    <MonthGrid
-                      month={payload.month}
-                      today={payload.today}
-                      selectedDate={selectedDate}
-                      weeks={weeks}
-                      spans={visibleSpans}
-                      lectureWeekByDate={payload.lectureWeekByDate}
-                      onSelectDate={selectDate}
-                    />
-                  </div>
-                  <div className="shrink-0 overflow-hidden rounded-xl border border-border bg-card min-[560px]:hidden">
-                    <DayPanel
-                      date={selectedDate}
-                      today={payload.today}
-                      program={payload.program}
-                      spans={daySpans}
-                      lectureWeek={lectureWeek}
-                    />
-                  </div>
+          <div className="month-content relative flex min-h-0 flex-1">
+            {ghost ? (
+              <div
+                className="month-stage-out pointer-events-none absolute inset-0"
+                aria-hidden
+                onAnimationEnd={(event) => {
+                  if (event.target !== event.currentTarget) return;
+                  setGhost(null);
+                }}
+              >
+                <MonthCards
+                  payload={ghost.payload}
+                  selectedDate={ghost.date}
+                  showKKT={showKKT}
+                  filter={filter}
+                  dayDocked={dayDocked}
+                  onSelectDate={selectDate}
+                />
+              </div>
+            ) : null}
+            <div
+              className={cn(monthStageShellClass, ghost && "month-stage-in")}
+              data-dir={enterFrom ?? undefined}
+            >
+            <div className="flex min-h-0 min-w-0 flex-1 basis-0 flex-col">
+              {frame.view === "grid" ? (
+                <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+                  <MonthGrid
+                    month={frame.month}
+                    today={frame.today}
+                    selectedDate={selectedDate}
+                    weeks={weeks}
+                    spans={visibleSpans}
+                    lectureWeekByDate={frame.lectureWeekByDate}
+                    onSelectDate={selectDate}
+                  />
                 </div>
               ) : (
-                <div className="min-h-0 flex-1 overflow-hidden rounded-xl border border-border bg-card">
+                <div className="min-h-0 flex-1 overflow-hidden">
                   <UpcomingList
-                    month={payload.month}
-                    today={payload.today}
-                    program={payload.program}
+                    month={frame.month}
+                    today={frame.today}
+                    program={frame.program}
                     selectedDate={selectedDate}
                     spans={visibleSpans}
                     onSelectDate={selectDate}
@@ -508,16 +492,17 @@ export function MonthPage({ payload }: MonthPageProps) {
                 </div>
               )}
             </div>
-            <aside className={cn("hidden min-h-0 w-80 shrink-0 overflow-hidden rounded-xl border border-border bg-card", dayDocked && "min-[1080px]:flex")}>
+            <aside className={monthStageDayAsideClass(dayDocked, frame.view)}>
               <DayPanel
                 date={selectedDate}
                 today={payload.today}
-                program={payload.program}
+                program={frame.program}
                 spans={daySpans}
                 lectureWeek={lectureWeek}
-                className="w-full"
+                className="h-full min-h-0 w-full"
               />
             </aside>
+            </div>
           </div>
         </main>
       </div>
@@ -525,7 +510,7 @@ export function MonthPage({ payload }: MonthPageProps) {
         {formatDayHeading(selectedDate)}, {daySpans.length === 1 ? "1 event" : `${daySpans.length} events`}
       </p>
       <Drawer open={sidebarOpen} onOpenChange={setSidebarOpen} swipeDirection="left">
-        <DrawerContent className="responsive-shell-bg h-dvh [--drawer-content-height:100dvh] [--drawer-content-width:18rem]">
+        <DrawerContent className="responsive-shell-bg h-dvh [--drawer-content-height:100dvh] [--drawer-content-width:18rem] [&_[data-slot=drawer-body-shell]]:min-h-0 [&_[data-slot=drawer-body-shell]]:flex-1 [&_[data-slot=drawer-body-shell]]:overflow-hidden">
           <DrawerTitle className="sr-only">Menu</DrawerTitle>
           <DrawerDescription className="sr-only">Programs, session, and calendars</DrawerDescription>
           <MonthSidebar
@@ -534,6 +519,7 @@ export function MonthPage({ payload }: MonthPageProps) {
             month={payload.month}
             sessionId={payload.sessionId}
             sessionOptions={payload.sessionOptions}
+            programOptions={payload.programOptions}
             defaultSession={payload.defaultSession}
             today={payload.today}
             spans={spans}
@@ -543,10 +529,11 @@ export function MonthPage({ payload }: MonthPageProps) {
               setSidebarOpen(false);
               changeSession(sessionId);
             }}
-            filterInputId="month-filter-drawer"
-            filterRef={drawerFilterRef}
             onNavigate={() => setSidebarOpen(false)}
             onClose={() => setSidebarOpen(false)}
+            showKKT={showKKT}
+            onShowKKTChange={setShowKKT}
+            hasRegionalDateRange={hasRegionalDateRange}
           />
         </DrawerContent>
       </Drawer>
@@ -565,6 +552,92 @@ export function MonthPage({ payload }: MonthPageProps) {
           />
         </DrawerContent>
       </Drawer>
+    </div>
+  );
+}
+
+function monthContentKey(payload: MonthCalendarPayload): string {
+  return `${payload.view}|${payload.program}|${payload.sessionId}|${payload.month}`;
+}
+
+function monthEnterFrom(from: string, to: string): "next" | "prev" | null {
+  if (from === to) return null;
+  return to > from ? "next" : "prev";
+}
+
+const monthStageShellClass =
+  "flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-xl border border-border bg-card min-[1080px]:flex-row";
+
+function monthStageDayAsideClass(dayDocked: boolean, view: MonthView) {
+  return cn(
+    "flex min-h-0 w-full min-w-0 flex-1 basis-0 flex-col overflow-hidden",
+    "border-t border-border min-[1080px]:w-80 min-[1080px]:flex-none min-[1080px]:shrink-0 min-[1080px]:border-t-0 min-[1080px]:border-l",
+    view !== "grid" && "max-[1079px]:hidden",
+    !dayDocked && "min-[1080px]:hidden"
+  );
+}
+
+function MonthCards({
+  payload,
+  selectedDate,
+  showKKT,
+  filter,
+  dayDocked,
+  onSelectDate,
+}: {
+  payload: MonthCalendarPayload;
+  selectedDate: string;
+  showKKT: boolean;
+  filter: MonthFilterState;
+  dayDocked: boolean;
+  onSelectDate: (date: string) => void;
+}) {
+  const spans = useMemo(
+    () => buildMonthSpans(payload.activities, payload.holidays, showKKT).filter((span) => spanMatchesFilter(span, filter)),
+    [filter, payload.activities, payload.holidays, showKKT]
+  );
+  const weeks = useMemo(() => packMonth(spans, payload.month), [payload.month, spans]);
+  const daySpans = useMemo(() => spansOnDate(spans, selectedDate), [selectedDate, spans]);
+  const lectureWeek = payload.lectureWeekByDate[selectedDate];
+
+  return (
+    <div className={monthStageShellClass}>
+      <div className="flex min-h-0 min-w-0 flex-1 basis-0 flex-col">
+        {payload.view === "grid" ? (
+          <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+            <MonthGrid
+              month={payload.month}
+              today={payload.today}
+              selectedDate={selectedDate}
+              weeks={weeks}
+              spans={spans}
+              lectureWeekByDate={payload.lectureWeekByDate}
+              onSelectDate={onSelectDate}
+            />
+          </div>
+        ) : (
+          <div className="min-h-0 flex-1 overflow-hidden">
+            <UpcomingList
+              month={payload.month}
+              today={payload.today}
+              program={payload.program}
+              selectedDate={selectedDate}
+              spans={spans}
+              onSelectDate={onSelectDate}
+            />
+          </div>
+        )}
+      </div>
+      <aside className={monthStageDayAsideClass(dayDocked, payload.view)}>
+        <DayPanel
+          date={selectedDate}
+          today={payload.today}
+          program={payload.program}
+          spans={daySpans}
+          lectureWeek={lectureWeek}
+          className="h-full min-h-0 w-full"
+        />
+      </aside>
     </div>
   );
 }

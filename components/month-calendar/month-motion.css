@@ -1,38 +1,69 @@
-.month-content {
-  opacity: 1;
-  transition: opacity var(--motion-header) var(--ease-out);
+/*
+ * Crossfade the month grid card and the day card together.
+ * The previous frame stays underneath, so the surface never goes blank.
+ * 180ms ease-out: fast enough for repeated month changes, slow enough to read.
+ */
+.month-stage-in {
+  animation: month-stage-in 180ms var(--ease-out) both;
 }
 
-.month-content[data-fade="out"] {
-  opacity: 0;
-  transition: none;
+.month-stage-in[data-dir="next"] {
+  animation-name: month-stage-in-next;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .month-content {
-    transition: none;
+.month-stage-in[data-dir="prev"] {
+  animation-name: month-stage-in-prev;
+}
+
+@media (max-width: 1079px) {
+  .month-stage-in[data-dir="next"] {
+    animation-name: month-stage-in-next-y;
+  }
+
+  .month-stage-in[data-dir="prev"] {
+    animation-name: month-stage-in-prev-y;
   }
 }
 
-/*
- * globals.css sets transition-property: none !important on almost every element.
- * Repeat the fade with that same exclusion list so this opacity transition still runs.
- */
-.month-content:not(.sticky.top-0):not(.sticky.top-0 *):not([data-slot="select-trigger"]):not([data-slot="select-content"]):not([data-slot="popover-content"]):not([data-slot="popover-content"] *):not([data-slot="drawer-popup"]):not([data-slot="drawer-overlay"]):not([data-today-fab]):not(:hover):not(button:hover):not(a:hover) {
-  transition-property: opacity !important;
-  transition-duration: var(--motion-header) !important;
-  transition-timing-function: var(--ease-out) !important;
+.month-stage-out {
+  animation: month-stage-out 180ms var(--ease-out) both;
 }
 
-.month-content[data-fade="out"]:not(.sticky.top-0):not(.sticky.top-0 *):not([data-slot="select-trigger"]):not([data-slot="select-content"]):not([data-slot="popover-content"]):not([data-slot="popover-content"] *):not([data-slot="drawer-popup"]):not([data-slot="drawer-overlay"]):not([data-today-fab]):not(:hover):not(button:hover):not(a:hover) {
-  opacity: 0;
-  transition-property: none !important;
-  transition-duration: 0ms !important;
+@keyframes month-stage-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes month-stage-in-next {
+  from { opacity: 0; transform: translateX(8px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes month-stage-in-prev {
+  from { opacity: 0; transform: translateX(-8px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes month-stage-in-next-y {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes month-stage-in-prev-y {
+  from { opacity: 0; transform: translateY(-12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes month-stage-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .month-content:not(.sticky.top-0):not(.sticky.top-0 *):not([data-slot="select-trigger"]):not([data-slot="select-content"]):not([data-slot="popover-content"]):not([data-slot="popover-content"] *):not([data-slot="drawer-popup"]):not([data-slot="drawer-overlay"]):not([data-today-fab]):not(:hover):not(button:hover):not(a:hover) {
-    transition-property: none !important;
-    transition-duration: 0ms !important;
+  .month-stage-in,
+  .month-stage-in[data-dir="next"],
+  .month-stage-in[data-dir="prev"],
+  .month-stage-out {
+    animation: none;
   }
 }

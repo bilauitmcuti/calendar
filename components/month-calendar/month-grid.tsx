@@ -22,6 +22,7 @@ interface MonthGridProps {
 }
 
 const WEEKDAYS = weekdayInitials();
+const MAX_COMPACT_DAY_TICKS = 4;
 
 export function MonthGrid({
   month,
@@ -39,18 +40,18 @@ export function MonthGrid({
           <div
             key={`${label}-${index}`}
             role="columnheader"
-            className={cn("border-l border-border px-1 py-2 text-center", monthType.gridWeekday)}
+            className={cn(index > 0 && "border-l border-border", "px-1 py-2 text-center", monthType.gridWeekday)}
           >
             <span className="min-[560px]:hidden">{label.slice(0, 1)}</span>
             <span className="hidden min-[560px]:inline">{label}</span>
           </div>
         ))}
       </div>
-      <div className="grid min-h-0 flex-1 grid-rows-[repeat(6,minmax(3.25rem,auto))] min-[560px]:grid-rows-6">
+      <div className="grid min-h-0 flex-1 grid-rows-6">
         {weeks.map((week) => (
-          <div key={week.dates[0]} className="relative min-h-0 border-b border-border" role="row">
+          <div key={week.dates[0]} className="relative min-h-0 border-b border-border last:border-b-0" role="row">
             <div className="grid h-full grid-cols-7">
-              {week.dates.map((date) => {
+              {week.dates.map((date, dayIndex) => {
                 const inMonth = date.startsWith(month);
                 const isToday = date === today;
                 const isSelected = date === selectedDate;
@@ -69,7 +70,8 @@ export function MonthGrid({
                     data-month-date={date}
                     onClick={() => onSelectDate(date)}
                     className={cn(
-                      "flex h-full min-h-13 flex-col items-center border-l border-border px-0.5 pt-1 text-center min-[560px]:items-stretch min-[560px]:px-1",
+                      "flex h-full min-h-0 flex-col items-center overflow-hidden px-0.5 pt-1 text-center min-[560px]:items-stretch min-[560px]:px-1",
+                      dayIndex > 0 && "border-l border-border",
                       isSelected && "bg-muted/70"
                     )}
                   >
@@ -84,16 +86,22 @@ export function MonthGrid({
                     >
                       {dayNumber}
                     </span>
-                    <span className="mt-1 flex items-center justify-center gap-0.5 min-[560px]:hidden" aria-hidden>
-                      {ticks.map((calendarId) => (
-                        <span key={calendarId} className={cn("size-1.5 rounded-full", CALENDAR_STYLE[calendarId].dot)} />
+                    <span
+                      className="mt-1 flex max-w-full flex-nowrap items-center justify-center gap-px overflow-hidden min-[1080px]:hidden"
+                      aria-hidden
+                    >
+                      {ticks.slice(0, MAX_COMPACT_DAY_TICKS).map((calendarId) => (
+                        <span
+                          key={calendarId}
+                          className={cn("size-1.5 shrink-0 rounded-full", CALENDAR_STYLE[calendarId].dot)}
+                        />
                       ))}
                     </span>
                   </button>
                 );
               })}
             </div>
-            <div className="pointer-events-none absolute inset-x-0 top-8 bottom-5 hidden content-start gap-y-0.5 overflow-hidden grid-cols-7 grid-auto-rows-[1.25rem] min-[560px]:grid min-[900px]:top-9 min-[900px]:grid-auto-rows-[1.5rem]">
+            <div className="pointer-events-none absolute inset-x-0 top-8 bottom-5 hidden content-start gap-y-0.5 overflow-hidden grid-cols-7 grid-auto-rows-[1.25rem] min-[1080px]:grid min-[1080px]:top-9 min-[1080px]:grid-auto-rows-[1.5rem]">
               {week.lanes.map((lane) => {
                 const style = CALENDAR_STYLE[lane.span.calendarId];
                 const weekNum = lane.span.calendarId === "lecture" ? lectureWeekForLane(lane, lectureWeekByDate) : undefined;
@@ -124,7 +132,7 @@ export function MonthGrid({
                 );
               })}
             </div>
-            <div className="pointer-events-none absolute inset-x-0 bottom-0.5 hidden grid-cols-7 min-[560px]:grid">
+            <div className="pointer-events-none absolute inset-x-0 bottom-0.5 hidden grid-cols-7 min-[1080px]:grid">
               {week.dates.map((date, index) => {
                 const extra = week.overflowByDate[date] ?? 0;
                 return (
@@ -168,7 +176,7 @@ function uniqueTicks(spans: MonthSpan[]) {
   for (const span of spans) {
     if (ids.includes(span.calendarId)) continue;
     ids.push(span.calendarId);
-    if (ids.length === 4) break;
+    if (ids.length >= MAX_COMPACT_DAY_TICKS) break;
   }
   return ids;
 }

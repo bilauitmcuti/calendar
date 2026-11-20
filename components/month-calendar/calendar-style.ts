@@ -1,10 +1,10 @@
 import {
-  Alert02Icon,
   BeachIcon,
   BookOpen01Icon,
   Flag01Icon,
-  NotebookIcon,
-  Task01Icon,
+  Layers01Icon,
+  Quiz01Icon,
+  StudentCardIcon,
 } from "@hugeicons/core-free-icons";
 import type { CalendarId } from "@/components/month-calendar/pack-spans";
 
@@ -24,7 +24,7 @@ export const CALENDAR_STYLE: Record<
     dot: "bg-[#dc2626]",
     bar: "bg-red-100 dark:bg-red-900/35",
     text: "text-[#b91c1c] dark:text-[#fecaca]",
-    icon: Alert02Icon,
+    icon: Quiz01Icon,
   },
   break: {
     label: "Break",
@@ -38,14 +38,14 @@ export const CALENDAR_STYLE: Record<
     dot: "bg-[#d1d5db]",
     bar: "bg-stone-100 dark:bg-stone-800/50",
     text: "text-stone-700 dark:text-stone-200",
-    icon: Task01Icon,
+    icon: StudentCardIcon,
   },
   other: {
     label: "Other",
     dot: "bg-gray-400",
-    bar: "bg-slate-100 dark:bg-slate-800/50",
-    text: "text-slate-700 dark:text-slate-200",
-    icon: NotebookIcon,
+    bar: "bg-gray-200 dark:bg-gray-400/25",
+    text: "text-gray-500 dark:text-gray-400",
+    icon: Layers01Icon,
   },
   holiday: {
     label: "Public Holiday",

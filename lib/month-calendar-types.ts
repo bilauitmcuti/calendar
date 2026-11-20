@@ -1,4 +1,4 @@
-import type { PublicHolidayRow, SessionOptionRow, DefaultSessionMap } from "@/lib/calendar-api";
+import type { PublicHolidayRow, ProgramOptionRow, SessionOptionRow, DefaultSessionMap } from "@/lib/calendar-api";
 import type { Activity } from "@/lib/data";
 import type { ProgramValue } from "@/lib/route-utils";
 import type { MonthView } from "@/lib/month-routes";
@@ -15,6 +15,7 @@ export interface MonthCalendarPayload {
   lectureWeekByDate: Record<string, number>;
   holidays: PublicHolidayRow[];
   sessionOptions: SessionOptionRow[];
+  programOptions: ProgramOptionRow[];
   defaultSession: DefaultSessionMap;
   error?: string;
 }

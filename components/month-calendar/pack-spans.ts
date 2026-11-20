@@ -50,14 +50,12 @@ export interface WeekLayout {
 }
 
 export interface MonthFilterState {
-  query: string;
   enabled: Record<CalendarId, boolean>;
   only: CalendarId | null;
 }
 
 export function defaultMonthFilters(): MonthFilterState {
   return {
-    query: "",
     enabled: {
       lecture: true,
       examination: true,
@@ -130,15 +128,24 @@ export function dateInMonthGrid(month: string, iso: string): boolean {
 
 export function buildMonthSpans(
   activities: Activity[],
-  holidays: PublicHolidayRow[]
+  holidays: PublicHolidayRow[],
+  showKKT = false
 ): MonthSpan[] {
   const spans: MonthSpan[] = [];
   const seen = new Map<string, MonthSpan>();
 
   activities.forEach((activity, index) => {
-    const start = normalizeDateString(activity.startDate);
+    let start = normalizeDateString(activity.startDate);
     if (!ISO_DATE.test(start)) return;
-    const endRaw = activity.endDate ? normalizeDateString(activity.endDate) : start;
+    let endRaw = activity.endDate ? normalizeDateString(activity.endDate) : start;
+    if (showKKT && activity.regionalStartDate) {
+      const regionalStart = normalizeDateString(activity.regionalStartDate);
+      if (ISO_DATE.test(regionalStart)) start = regionalStart;
+    }
+    if (showKKT && activity.regionalEndDate) {
+      const regionalEnd = normalizeDateString(activity.regionalEndDate);
+      if (ISO_DATE.test(regionalEnd)) endRaw = regionalEnd;
+    }
     const end = ISO_DATE.test(endRaw) ? endRaw : start;
     const [rangeStart, rangeEnd] = start <= end ? [start, end] : [end, start];
     const key = `${activity.type}|${activity.name}|${rangeStart}|${rangeEnd}`;
@@ -192,10 +199,7 @@ export function spanMatchesFilter(span: MonthSpan, filter: MonthFilterState): bo
   } else if (!filter.enabled[span.calendarId]) {
     return false;
   }
-  const query = filter.query.trim().toLowerCase();
-  if (!query) return true;
-  const haystack = `${span.title} ${span.details ?? ""} ${(span.states ?? []).join(" ")}`.toLowerCase();
-  return haystack.includes(query);
+  return true;
 }
 
 export function spansOnDate(spans: MonthSpan[], date: string): MonthSpan[] {
@@ -205,17 +209,13 @@ export function spansOnDate(spans: MonthSpan[], date: string): MonthSpan[] {
 export function countSpansInMonth(
   spans: MonthSpan[],
   month: string,
-  calendarId: CalendarId,
-  query: string
+  calendarId: CalendarId
 ): number {
   const { start, end } = monthBounds(month);
-  const needle = query.trim().toLowerCase();
   return spans.filter((span) => {
     if (span.calendarId !== calendarId) return false;
     if (span.end < start || span.start > end) return false;
-    if (!needle) return true;
-    const haystack = `${span.title} ${span.details ?? ""}`.toLowerCase();
-    return haystack.includes(needle);
+    return true;
   }).length;
 }
 

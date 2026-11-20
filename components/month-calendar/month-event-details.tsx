@@ -12,15 +12,17 @@ interface MonthEventDetailsProps {
   program: ProgramValue;
   className?: string;
   badgesClassName?: string;
+  titleAs?: "h3" | "h4";
 }
 
-export function MonthEventDetails({ span, program, className, badgesClassName }: MonthEventDetailsProps) {
+export function MonthEventDetails({ span, program, className, badgesClassName, titleAs = "h3" }: MonthEventDetailsProps) {
   const style = CALENDAR_STYLE[span.calendarId];
   const range = formatDateRange(span.start, span.end === span.start ? undefined : span.end);
   const states = span.states?.length ? formatHolidayStates(span.states) : "";
   const subjectToChange = span.details === "Subject to change";
   const title = subjectToChange ? `${span.title} *` : span.title;
   const badges = span.calendarId === "holiday" ? [] : badgesFor(span, program);
+  const Title = titleAs === "h4" ? "h4" : "h3";
 
   return (
     <div className={cn("flex min-w-0 flex-1 flex-col gap-1", className)}>
@@ -41,7 +43,7 @@ export function MonthEventDetails({ span, program, className, badgesClassName }:
         <div className="flex h-[1lh] shrink-0 items-center">
           <span className={cn("size-2 shrink-0 rounded-full", style.dot)} />
         </div>
-        <h3 className={monthType.eventTitle}>{title}</h3>
+        <Title className={monthType.eventTitle}>{title}</Title>
       </div>
       <p className={monthType.eventMeta}>{range}</p>
       {span.duration ? <p className={monthType.eventMeta}>{span.duration}</p> : null}

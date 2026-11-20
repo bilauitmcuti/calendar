@@ -1,6 +1,7 @@
 'use client';
 
 import { useId, type ReactNode } from 'react';
+import { cn } from '@/lib/utils';
 
 interface SettingsSwitchRowProps {
   label: ReactNode;
@@ -47,10 +48,20 @@ export function SettingsSwitchRow({
         {kbd}
       </div>
       <div
-        className={`toggle-switch relative inline-flex h-6 w-11 items-center rounded-full ${checked ? 'bg-primary' : 'bg-muted'}`}
+        className={cn(
+          'toggle-switch relative inline-flex h-6 w-11 shrink-0 items-center rounded-full border border-transparent transition-colors',
+          checked
+            ? 'border-primary bg-primary'
+            : 'border-border bg-input shadow-xs dark:border-border dark:bg-[#3A3A3A]'
+        )}
       >
         <span
-          className={`toggle-switch-thumb inline-block h-4 w-4 rounded-full shadow-sm ${checked ? 'translate-x-5 bg-background' : 'translate-x-0.5 bg-background dark:bg-foreground'}`}
+          className={cn(
+            'toggle-switch-thumb inline-block size-4 rounded-full shadow-sm',
+            checked
+              ? 'translate-x-5 bg-background'
+              : 'translate-x-0.5 bg-background dark:bg-foreground'
+          )}
         />
         {interactive ? (
           <input

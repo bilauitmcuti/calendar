@@ -68,6 +68,7 @@ export async function loadMonthCalendar(params: {
     lectureWeekByDate,
     holidays,
     sessionOptions: meta.sessionOptions,
+    programOptions: meta.programOptions,
     defaultSession: meta.defaultSession,
     error,
   };
