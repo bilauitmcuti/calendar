@@ -6,6 +6,7 @@ import { isValidProgramRoute, getProgramDisplayName } from '@/lib/route-utils';
 import { getProgramCanonicalUrl, getProgramPageTitle, getProgramSeoDescription } from '@/lib/program-seo';
 import { SITE_ORIGIN } from '@/lib/page-seo';
 import { buildCalendarPageMetadata } from '@/lib/calendar-seo-metadata';
+import { CalendarSeoLinks } from '@/components/calendar-seo-links';
 import { PageSeoBlock } from '@/components/page-seo-block';
 import type { Metadata } from 'next';
 
@@ -62,10 +63,11 @@ export default async function ProgramPage({ params, searchParams }: ProgramPageP
         description={description}
         url={canonical}
         breadcrumbs={[
-          { name: 'Home', item: SITE_ORIGIN },
+          { name: 'Laman Utama', item: SITE_ORIGIN },
           { name: programName, item: canonical },
         ]}
       />
+      <CalendarSeoLinks listHref={`/${program}/list`} />
       <CalendarWrapper viewMode="grid" programFromRoute={program} />
     </>
   );

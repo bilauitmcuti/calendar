@@ -57,6 +57,16 @@ const nextConfig = {
         permanent: true, // HTTP 308
       },
       {
+        source: '/month',
+        destination: '/calendar',
+        permanent: true,
+      },
+      {
+        source: '/month/:path*',
+        destination: '/calendar/:path*',
+        permanent: true,
+      },
+      {
         source: '/roadmap',
         destination:
           'https://bilauitmcuti.notion.site/3774a1187b9c8032ab31eb9a2fecf0ea?v=3774a1187b9c807793e9000c046a55e4',

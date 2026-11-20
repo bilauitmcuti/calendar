@@ -51,7 +51,10 @@ describe("zaraz", () => {
 
     trackZarazPageView("/about");
 
-    expect(track).toHaveBeenCalledWith("Pageview", { path: "/about" });
+    expect(track).toHaveBeenCalledWith("Pageview", {
+      path: "/about",
+      page_location: "https://bilauitmcuti.com/about",
+    });
   });
 
   it("forwards calendar program selection events", () => {

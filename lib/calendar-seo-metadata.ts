@@ -7,13 +7,16 @@ import { parseFilterKeysFromSearchParams } from "@/lib/filter-query";
 import {
   getProgramCanonicalUrl,
   getProgramListCanonicalUrl,
+  getProgramListPageTitle,
   getProgramListSeoDescription,
   getProgramPageTitle,
   getProgramSeoDescription,
 } from "@/lib/program-seo";
 import { isValidProgramRoute } from "@/lib/route-utils";
+import { monthCalendarSeoFromPath } from "@/lib/month-routes";
 import {
   HOMEPAGE_LIST_SEO_DESCRIPTION,
+  HOMEPAGE_LIST_SEO_TITLE,
   HOMEPAGE_SEO_DESCRIPTION,
   HOMEPAGE_SEO_TITLE,
   SITE_ORIGIN,
@@ -84,7 +87,7 @@ export function resolveCalendarSeoContent(
 
   if (programSlug && isValidProgramRoute(programSlug)) {
     return {
-      title: getProgramPageTitle(programSlug),
+      title: isList ? getProgramListPageTitle(programSlug) : getProgramPageTitle(programSlug),
       description: isList
         ? getProgramListSeoDescription(programSlug)
         : getProgramSeoDescription(programSlug),
@@ -98,7 +101,7 @@ export function resolveCalendarSeoContent(
 
   if (isList) {
     return {
-      title: HOMEPAGE_SEO_TITLE,
+      title: HOMEPAGE_LIST_SEO_TITLE,
       description: HOMEPAGE_LIST_SEO_DESCRIPTION,
       canonical: `${SITE_ORIGIN}/list`,
       coverImage,
@@ -116,6 +119,16 @@ export function resolveCalendarSeoContent(
 }
 
 export function resolveCalendarSeoFromPathname(pathname: string): CalendarPageSeo {
+  const monthCalendar = monthCalendarSeoFromPath(pathname);
+  if (monthCalendar) {
+    return {
+      title: monthCalendar.title,
+      description: monthCalendar.description,
+      canonical: monthCalendar.canonical,
+      coverImage: monthCalendar.coverImage,
+      viewMode: monthCalendar.view === "upcoming" ? "list" : "grid",
+    };
+  }
   const { viewMode, programSlug } = parseCalendarPathname(pathname);
   return resolveCalendarSeoContent(viewMode, programSlug);
 }
@@ -125,7 +138,6 @@ export function buildCalendarPageMetadata(options: CalendarSeoOptions): Metadata
   const params = toURLSearchParams(options.searchParams);
   const sessionIds = parseSessionIdsFromSearchParams(params);
   const filterKeys = parseFilterKeysFromSearchParams(params);
-  const isList = viewMode === "list";
   const seo = resolveCalendarSeoContent(viewMode, programSlug);
   const { title, description, canonical, coverImage } = seo;
 
@@ -161,10 +173,6 @@ export function buildCalendarPageMetadata(options: CalendarSeoOptions): Metadata
       images: [coverImage],
     },
   };
-
-  if (isList) {
-    metadata.robots = { index: false, follow: true };
-  }
 
   return metadata;
 }

@@ -11,19 +11,22 @@ describe("resolveCalendarSeoFromPathname", () => {
     expect(seo.canonical).toBe("https://bilauitmcuti.com/bachelor");
   });
 
-  it("returns program title for list program routes", () => {
+  it("returns program list title for list program routes", () => {
     const seo = resolveCalendarSeoFromPathname("/diploma/list");
-    expect(seo.title).toBe("Diploma - Kalendar Akademik");
+    expect(seo.title).toBe("Diploma - Senarai Kalendar Akademik");
     expect(seo.canonical).toBe("https://bilauitmcuti.com/diploma/list");
+    expect(seo.title).not.toMatch(/2025|2026|2027/);
   });
 
-  it("returns homepage title for / and /list", () => {
+  it("returns homepage title for / and a distinct list title for /list", () => {
     expect(resolveCalendarSeoFromPathname("/").title).toBe(
       "Bila UiTM Cuti - Kalendar Akademik"
     );
     expect(resolveCalendarSeoFromPathname("/list").title).toBe(
-      "Bila UiTM Cuti - Kalendar Akademik"
+      "Bila UiTM Cuti - Senarai Kalendar Akademik"
     );
+    expect(resolveCalendarSeoFromPathname("/").title).not.toMatch(/2025|2026|2027/);
+    expect(resolveCalendarSeoFromPathname("/").description).toContain("2027");
   });
 
   it("uses different Malay descriptions for program grid vs list", () => {
@@ -34,11 +37,23 @@ describe("resolveCalendarSeoFromPathname", () => {
     expect(list.description).toContain("Senarai");
   });
 
+  it("uses the homepage Open Graph image for calendar routes", () => {
+    const grid = resolveCalendarSeoFromPathname("/calendar");
+    const list = resolveCalendarSeoFromPathname("/calendar/list");
+    const program = resolveCalendarSeoFromPathname("/calendar/diploma");
+    expect(grid.title).toBe("Bila UiTM Cuti - Calendar");
+    expect(list.title).toBe("Bila UiTM Cuti - Senarai Kalendar");
+    expect(grid.coverImage).toBe("https://bilauitmcuti.com/og/main.png");
+    expect(list.coverImage).toBe(grid.coverImage);
+    expect(program.coverImage).toBe(grid.coverImage);
+    expect(program.canonical).toBe("https://bilauitmcuti.com/calendar/diploma");
+  });
+
   it("uses different Malay descriptions for homepage grid vs /list", () => {
     const grid = resolveCalendarSeoFromPathname("/");
     const list = resolveCalendarSeoFromPathname("/list");
     expect(grid.description).not.toBe(list.description);
-    expect(list.description).toContain("senarai");
+    expect(list.description).toContain("Senarai");
   });
 });
 
@@ -51,6 +66,7 @@ describe("buildCalendarPageMetadata list routes", () => {
     });
     expect(metadata.openGraph?.url).toBe("https://bilauitmcuti.com/list");
     expect(metadata.alternates?.canonical).toBe("https://bilauitmcuti.com/list");
+    expect(metadata.robots).toBeUndefined();
   });
 
   it("includes session query in og:url for /list?B-20263", () => {

@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
-import { trackZarazPageView } from "@/lib/zaraz";
+import { setZarazPageLocation, trackZarazPageView } from "@/lib/zaraz";
 
 /**
  * Sends GA4 pageviews via Zaraz on Next.js client navigations.
@@ -19,6 +19,7 @@ export function ZarazPageView() {
 
     if (isFirstRender.current) {
       isFirstRender.current = false;
+      setZarazPageLocation(path);
       return;
     }
 
