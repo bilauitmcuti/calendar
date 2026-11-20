@@ -35,7 +35,7 @@ export function MonthGrid({
 }: MonthGridProps) {
   return (
     <div className="flex min-h-0 flex-1 flex-col" role="grid" aria-label="Calendar">
-      <div className="grid shrink-0 grid-cols-7 border-b border-border" role="row">
+      <div className="grid shrink-0 grid-cols-7 border-b border-t border-border min-[900px]:border-t-0" role="row">
         {WEEKDAYS.map((label, index) => (
           <div
             key={`${label}-${index}`}

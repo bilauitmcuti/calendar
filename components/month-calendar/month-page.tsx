@@ -67,7 +67,9 @@ export function MonthPage({ payload }: MonthPageProps) {
   const [dayDocked, setDayDocked] = useState(true);
   const pendingSessionId = useRef<string | null>(null);
   const selectedDateRef = useRef(selectedDate);
-  selectedDateRef.current = selectedDate;
+  useEffect(() => {
+    selectedDateRef.current = selectedDate;
+  }, [selectedDate]);
   const appliedArrival = useRef({ month: payload.month, sessionId: payload.sessionId });
   const playedContentFade = useRef(0);
   const [frame, setFrame] = useState(payload);
