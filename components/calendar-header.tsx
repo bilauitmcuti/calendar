@@ -141,33 +141,33 @@ export function CalendarHeader({
         {headerBadgeLabel}
       </span>
 
-      {/* Browser: site title */}
+      {/* Browser: site title. One H1 lives in PageSeoBlock. */}
       <div className="standalone:hidden w-full">
-        <h1
+        <p
           className={`mb-2 ${calendarTitleH1Class}`}
           suppressHydrationWarning
           style={calendarTitleH1Style}
         >
           <BrandName questionMark />
-        </h1>
+        </p>
       </div>
 
       {/* PWA standalone: today weekday + date (CSS, no hydration flip) */}
       <div className="mb-2 hidden standalone:flex w-full flex-wrap items-center gap-2 sm:gap-3">
-        <h1
+        <p
           className={`shrink-0 ${calendarTitleH1Class}`}
           suppressHydrationWarning
           style={calendarTitleH1Style}
         >
           {dayShort}
-        </h1>
-        <h1
+        </p>
+        <p
           className={`min-w-0 ${calendarTitleH1Class}`}
           suppressHydrationWarning
           style={calendarTitleH1Style}
         >
           {dateLabel}
-        </h1>
+        </p>
       </div>
 
       {legend}

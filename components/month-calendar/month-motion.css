@@ -1,0 +1,69 @@
+/*
+ * Crossfade the month grid card and the day card together.
+ * The previous frame stays underneath, so the surface never goes blank.
+ * 180ms ease-out: fast enough for repeated month changes, slow enough to read.
+ */
+.month-stage-in {
+  animation: month-stage-in 180ms var(--ease-out) both;
+}
+
+.month-stage-in[data-dir="next"] {
+  animation-name: month-stage-in-next;
+}
+
+.month-stage-in[data-dir="prev"] {
+  animation-name: month-stage-in-prev;
+}
+
+@media (max-width: 1079px) {
+  .month-stage-in[data-dir="next"] {
+    animation-name: month-stage-in-next-y;
+  }
+
+  .month-stage-in[data-dir="prev"] {
+    animation-name: month-stage-in-prev-y;
+  }
+}
+
+.month-stage-out {
+  animation: month-stage-out 180ms var(--ease-out) both;
+}
+
+@keyframes month-stage-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes month-stage-in-next {
+  from { opacity: 0; transform: translateX(8px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes month-stage-in-prev {
+  from { opacity: 0; transform: translateX(-8px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes month-stage-in-next-y {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes month-stage-in-prev-y {
+  from { opacity: 0; transform: translateY(-12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes month-stage-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .month-stage-in,
+  .month-stage-in[data-dir="next"],
+  .month-stage-in[data-dir="prev"],
+  .month-stage-out {
+    animation: none;
+  }
+}

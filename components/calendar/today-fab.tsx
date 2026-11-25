@@ -231,7 +231,7 @@ export function CalendarTodayFab({
     <Button
       ref={buttonRef}
       type="button"
-      variant="secondary"
+      variant="outline"
       size="sm"
       aria-label="Go to today"
       aria-hidden={!shouldShow}
@@ -250,10 +250,12 @@ export function CalendarTodayFab({
           : "-50% calc(100% + 24px)",
       }}
       className={cn(
-        "fixed z-40 rounded-full px-4 shadow-md",
+        "fixed z-40 rounded-full border border-border bg-background px-4 text-foreground shadow-md",
+        "hover:bg-muted dark:border-white/20 dark:bg-card dark:hover:bg-secondary",
         "bottom-[max(1.5rem,env(safe-area-inset-bottom,0px))] left-1/2",
-        "outline-none focus:outline-none focus-visible:border-transparent focus-visible:ring-0",
-        "[&:focus]:ring-0 [&:focus-visible]:ring-0 [&:focus]:shadow-none [&:focus-visible]:shadow-none",
+        "outline-none focus:outline-none focus-visible:border-border focus-visible:ring-0",
+        "dark:focus-visible:border-white/20",
+        "[&:focus]:ring-0 [&:focus-visible]:ring-0",
         "active:translate-y-0",
         shouldShow ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0"
       )}

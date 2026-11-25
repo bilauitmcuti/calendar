@@ -57,7 +57,28 @@ export function trackZarazEvent(
   void zaraz.track(eventName, payload);
 }
 
-/** Virtual pageview for Next.js client navigations (initial load uses Zaraz automatic Pageviews). */
+function pageLocationFromPath(path: string): string {
+  if (path.startsWith("http://") || path.startsWith("https://")) return path;
+  const origin =
+    typeof window !== "undefined" && window.location?.origin
+      ? window.location.origin
+      : "https://bilauitmcuti.com";
+  return `${origin}${path.startsWith("/") ? path : `/${path}`}`;
+}
+
+/** Gives GA4 a page_location so landing pages are not `(not set)` after client navigations. */
+export function setZarazPageLocation(path: string): void {
+  const zaraz = getZaraz();
+  if (!zaraz?.set) return;
+  void zaraz.set("page_location", pageLocationFromPath(path));
+}
+
+/**
+ * Virtual pageview for Next.js client navigations.
+ * The first HTML load stays on Zaraz automatic Pageviews (do not double-count).
+ */
 export function trackZarazPageView(path: string): void {
-  trackZarazEvent(ZARAZ_EVENTS.pageview, { path });
+  const pageLocation = pageLocationFromPath(path);
+  setZarazPageLocation(path);
+  trackZarazEvent(ZARAZ_EVENTS.pageview, { path, page_location: pageLocation });
 }

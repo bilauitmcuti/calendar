@@ -1,4 +1,5 @@
 import type { MetadataRoute } from 'next'
+import { MONTH_PROGRAMS, getMonthRoutePath } from '@/lib/month-routes'
 import { SITELINK_PROGRAM_SLUGS, SITE_ORIGIN } from '@/lib/page-seo'
 
 export const runtime = 'edge'
@@ -14,6 +15,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${SITE_ORIGIN}/internship`, lastModified, changeFrequency: 'weekly', priority: 0.7 },
   ]
 
+  const calendarPages: MetadataRoute.Sitemap = MONTH_PROGRAMS.map((program) => ({
+    url: `${SITE_ORIGIN}${getMonthRoutePath(program, 'grid')}`,
+    lastModified,
+    changeFrequency: 'weekly' as const,
+    priority: program === 'All' ? 0.9 : 0.7,
+  }))
+
   const programPages: MetadataRoute.Sitemap = SITELINK_PROGRAM_SLUGS.map((slug) => ({
     url: `${SITE_ORIGIN}/${slug}`,
     lastModified,
@@ -21,5 +29,27 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.8,
   }))
 
-  return [...staticPages, ...programPages]
+  const listPages: MetadataRoute.Sitemap = [
+    {
+      url: `${SITE_ORIGIN}/list`,
+      lastModified,
+      changeFrequency: 'weekly' as const,
+      priority: 0.85,
+    },
+    ...SITELINK_PROGRAM_SLUGS.map((slug) => ({
+      url: `${SITE_ORIGIN}/${slug}/list`,
+      lastModified,
+      changeFrequency: 'weekly' as const,
+      priority: 0.75,
+    })),
+  ]
+
+  const monthListPages: MetadataRoute.Sitemap = MONTH_PROGRAMS.map((program) => ({
+    url: `${SITE_ORIGIN}${getMonthRoutePath(program, 'upcoming')}`,
+    lastModified,
+    changeFrequency: 'weekly' as const,
+    priority: program === 'All' ? 0.8 : 0.65,
+  }))
+
+  return [...staticPages, ...calendarPages, ...programPages, ...listPages, ...monthListPages]
 }

@@ -6,12 +6,23 @@ import {
 
 export const SITE_ORIGIN = 'https://bilauitmcuti.com';
 
+export const HOMEPAGE_OG_IMAGE = `${SITE_ORIGIN}/og/main.png`;
+export const HOMEPAGE_OG_IMAGE_ALT = 'Bila UiTM Cuti - Academic Calendar';
+
 export const HOMEPAGE_SEO_TITLE = 'Bila UiTM Cuti - Kalendar Akademik';
 export const HOMEPAGE_SEO_DESCRIPTION =
-  'Kalendar akademik UiTM interaktif. Lihat jadual pendaftaran, kuliah, peperiksaan, dan cuti semester.';
+  'Kalendar akademik UiTM 2027 (Kumpulan A & B): tarikh kuliah, cuti pertengahan semester, peperiksaan akhir dan cuti semester. Dikemas kini mengikut takwim rasmi HEA UiTM.';
 
+export const HOMEPAGE_LIST_SEO_TITLE = 'Bila UiTM Cuti - Senarai Kalendar Akademik';
 export const HOMEPAGE_LIST_SEO_DESCRIPTION =
-  'Paparan senarai kalendar akademik UiTM untuk semua program. Semak tarikh pendaftaran, kuliah, peperiksaan, dan cuti mengikut sesi.';
+  'Senarai tarikh kalendar akademik UiTM 2027 untuk semua program — pendaftaran, kuliah, peperiksaan, dan cuti mengikut sesi.';
+
+/** Crawlable H2s in the hidden SEO block. Year stays here, not in the page title. */
+export const HOMEPAGE_SEO_SUBHEADINGS = [
+  'Jadual Akademik UiTM 2027',
+  'Takwim Cuti UiTM: Cuti Pertengahan Semester & Cuti Semester',
+  'Kalendar Akademik Ikut Program',
+] as const;
 
 export const CHAT_SEO_TITLE = 'Chat';
 export const CHAT_SEO_DESCRIPTION =

@@ -186,6 +186,10 @@ Client code uses [`lib/zaraz.ts`](lib/zaraz.ts) (`trackZarazEvent`, `ZARAZ_EVENT
 
 With **Events** automatic action enabled on the GA4 tool, these appear in GA4 without extra trigger configuration.
 
+**Key events (GA4 Admin):** mark only real goals — `select_program`, `open_chat`, `open_download`, `copy_share_link`. Do not mark `view_calendar_date` (it inflates the key-event count) or `purchase` (never fired; archive it). `page_location` is set on the first load and sent with client `Pageview` events so landing pages are less often `(not set)`.
+
+**GA4 / Search Console hygiene:** filter landing-page reports by hostname `bilauitmcuti.com` (or a separate stream) so `docs.` and `app.` are not mixed into this site. Add a GA4 annotation on the day each SEO change ships.
+
 **GA4 custom dimensions** (Admin → Custom definitions): register event-scoped dimensions for `program`, `program_group`, `calendar_session_id`, `calendar_session_ids`, `date`, `view`, `filter_key`, `source`, `action`, `from`, `to`, `direction`, `path` so Explorations can report top programs, sessions, and dates. Do not use `session_id` — GA4 reserves that name.
 
 ## Known Limitations

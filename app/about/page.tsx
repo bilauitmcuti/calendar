@@ -58,45 +58,39 @@ export default function AboutPage() {
           <h1>
             About <BrandName />
           </h1>
+          <div className="not-typeset mt-[var(--typeset-flow)]">
+            <Badge variant="destructive">Not affiliated with UiTM</Badge>
+          </div>
           <p>
-            A student-focused web app for checking UiTM academic calendar timelines — registration, lectures,
-            examinations, and semester breaks — in one place.
+            <BrandName /> helps UiTM students see registration, lectures, exams, and semester breaks on phone,
+            tablet, or desktop — without digging through scattered notices. It is an independent project: not
+            affiliated with, endorsed by, or run by Universiti Teknologi MARA (UiTM). Treat everything here as
+            unofficial and double-check dates and rules with official UiTM sources before you act.
           </p>
 
-          <h2>What&apos;s included</h2>
-          <p>Built for phones, tablets, and desktop — three tools students use most, in one place.</p>
-          <h3>Programs</h3>
-          <p>{programsText}</p>
-          <h3>Academic calendar</h3>
+          <h2>What you get</h2>
+          <p>Programs covered: {programsText}</p>
+          <ul>
+            <li>
+              <strong>Academic calendar</strong> — month or list view, activity filters, Group A and B, KKT regional
+              dates, countdown, light and dark themes, optional PWA install, and share links.
+            </li>
+            <li>
+              <strong>AI Chat</strong> — ask in everyday language about class days, breaks, exams, and what&apos;s
+              coming up.
+            </li>
+            <li>
+              <strong>MCP server</strong> — read-only calendar and public holiday data for Claude and other AI
+              tools. See the <Link href="/mcp">MCP setup guide</Link>.
+            </li>
+            <li>
+              <strong>Find My Internship</strong> — browse internship listings in one place instead of scattered
+              sources.
+            </li>
+          </ul>
           <p>
-            Browse your semester in month or list view. Filter activities, switch Group A and Group B sessions,
-            check KKT regional dates, and see a countdown to what comes next — with light and dark themes and
-            optional PWA install.
-          </p>
-          <h3>AI Chat</h3>
-          <p>
-            Ask Bila about your calendar in plain language — class days, breaks, exams, and what&apos;s coming up
-            — without digging through the grid yourself.
-          </p>
-          <h3>MCP Server</h3>
-          <p>
-            Connect Claude or other AI assistants to the <BrandName /> MCP server for read-only calendar and public
-            holiday data. See the <Link href="/mcp">MCP setup guide</Link> for how to add it in Claude.
-          </p>
-          <h3>Internship portal</h3>
-          <p>
-            Find My Internship brings internship listings into one place so you can browse opportunities without
-            jumping between scattered sources.
-          </p>
-          <p>
-            For feedback, bug reports, or suggestions, send them through the{' '}
-            <Link href="/feedback">feedback page</Link>.
-          </p>
-
-          <h2>Open source on GitHub</h2>
-          <p>
-            <BrandName /> is developed in the open. Explore the repositories, follow updates, and contribute on
-            GitHub.
+            Spotted a bug or have an idea? Use the <Link href="/feedback">feedback page</Link>. We build in the open
+            on GitHub — the <code>bilauitmcuti</code> organisation hosts this app and related projects.
           </p>
           <div className="not-typeset mt-[var(--typeset-flow)]">
             <Button
@@ -113,92 +107,37 @@ export default function AboutPage() {
               View on GitHub
             </Button>
           </div>
+
+          <h2>Terms of use</h2>
           <p>
-            The organization hosts the calendar web app and related projects that power this experience for
-            UiTM students.
+            By using <BrandName /> or any of the tools above (including the PWA and feedback form), you accept these
+            terms. If you do not agree, stop using the service. We may change features, content, or this wording
+            without advance notice; continued use means you accept what is on this page now.
           </p>
 
-          <h2>Terms and conditions</h2>
+          <h3>Accuracy and third-party content</h3>
           <p>
-            Terms and Conditions and the Privacy Policy are set out below.
-          </p>
-          <p>
-            By accessing or using <BrandName /> (the website, Progressive Web App, AI Chat, Find My Internship,
-            feedback tools, and related pages), you agree to these terms. If you do not agree, please stop using the
-            service.
-          </p>
-
-          <h3>Scope of the service</h3>
-          <p>
-            <BrandName /> provides student-oriented tools including an academic calendar (month and list views), AI
-            Chat for calendar-related questions, an internship browsing portal (Find My Internship), optional PWA
-            install, share links, and a feedback form. Features may change, move, or be temporarily unavailable as
-            the project evolves.
+            Calendar data, holidays, AI Chat replies, and internship listings are shared on a best-effort basis for
+            learning and reference only. AI answers are generated automatically and can be wrong or outdated.
+            Internship posts are not job offers from <BrandName /> or UiTM; applications and outcomes are between you
+            and the posting organisation. We do not guarantee completeness, accuracy, uptime, or third-party content.
+            Confirm anything important in the calendar views or official UiTM channels. Do not rely on this site
+            alone for exams, registration, leave, or employment decisions.
           </p>
 
-          <h3>Unofficial information</h3>
+          <h3>Feedback and fair use</h3>
           <p>
-            Calendar data, holiday information, AI Chat answers, and internship listings are unofficial and provided
-            on a best-effort basis for educational and informational use only. We do not guarantee completeness,
-            accuracy, timeliness, or uninterrupted availability.
-          </p>
-          <p>
-            You are responsible for verifying any date, deadline, academic requirement, or opportunity with official
-            UiTM channels or the relevant organisation before taking action. Do not treat this app as an official
-            source for exams, registration, leave, or employment decisions.
-          </p>
-
-          <h3>AI Chat</h3>
-          <p>
-            AI Chat responses are generated automatically and may be incomplete, outdated, or incorrect. Use them as
-            a convenience aid only. Always confirm important answers against the calendar views or official UiTM
-            sources.
-          </p>
-
-          <h3>Internship portal</h3>
-          <p>
-            Find My Internship aggregates or surfaces internship-related information for browsing. Listings are not
-            offers of employment from <BrandName /> or UiTM. Eligibility, application steps, and outcomes are between
-            you and the posting organisation. We are not responsible for third-party content, links, or hiring
-            decisions.
-          </p>
-
-          <h3>Feedback and attachments</h3>
-          <p>
-            Feedback you submit (including optional email and image attachments) may be reviewed to improve the
-            product. Do not upload sensitive personal data, passwords, or content you are not allowed to share.
-            Spam, abuse, or malicious uploads are not permitted.
-          </p>
-
-          <h3>Acceptable use</h3>
-          <p>
-            Use the service lawfully and reasonably. Do not attempt to disrupt, scrape excessively, reverse-engineer
-            protected parts of the system, or misuse APIs and rate limits in ways that harm other users or the
-            project.
-          </p>
-
-          <h3>Updates to these terms</h3>
-          <p>
-            We may update features, content, and these terms without prior notice to reflect the latest version of
-            the project. Continued use after changes means you accept the revised terms. The current wording on this
-            page is the version that applies.
+            We may read feedback you send (including optional email and images) to improve the product. Do not send
+            passwords, sensitive personal data, or anything you are not allowed to share. Use the service legally;
+            no spam, abuse, malicious uploads, aggressive scraping, reverse-engineering protected parts, or API abuse
+            that harms other users or the project.
           </p>
 
           <h3>Limitation of liability</h3>
           <p>
-            To the fullest extent permitted by law, the app owner and contributors are not liable for direct or
-            indirect loss arising from use of, or reliance on, this service — including missed deadlines, incorrect
-            AI answers, unavailable features, or internship-related outcomes.
-          </p>
-
-          <h2>Disclaimer</h2>
-          <div className="not-typeset mt-[var(--typeset-flow)]">
-            <Badge variant="destructive">Not affiliated with UiTM</Badge>
-          </div>
-          <p>
-            This app is not affiliated with, endorsed by, or operated by Universiti Teknologi MARA (UiTM). It is an
-            independent, student-focused project for educational and informational purposes only. Please verify
-            important dates and requirements directly with official UiTM sources.
+            Where the law allows, the app owner and contributors are not liable for direct or indirect loss from using
+            or trusting this service, including missed deadlines, wrong AI answers, unavailable features, or
+            internship-related outcomes.
           </p>
         </article>
       </div>
