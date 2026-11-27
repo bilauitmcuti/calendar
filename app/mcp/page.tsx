@@ -106,7 +106,7 @@ export default function McpPage() {
               variant="ghost"
               size="icon-sm"
               aria-label={copied ? 'Copied' : 'Copy URL'}
-              className="absolute top-0 right-0.5 bottom-0 my-auto text-muted-foreground active:translate-none"
+              className="absolute top-0 right-0.5 bottom-0 my-auto text-muted-foreground active:not-aria-[haspopup]:translate-none"
               onClick={() => void handleCopy()}
             >
               <HugeiconsIcon icon={copied ? Tick02Icon : Copy01Icon} strokeWidth={2} className="size-4" />
@@ -187,7 +187,7 @@ export default function McpPage() {
               variant="ghost"
               size="icon-sm"
               aria-label={grokPromptCopied ? 'Copied' : 'Copy message'}
-              className="absolute top-0 right-0.5 bottom-0 my-auto text-muted-foreground active:translate-none"
+              className="absolute top-0 right-0.5 bottom-0 my-auto text-muted-foreground active:not-aria-[haspopup]:translate-none"
               onClick={() => void handleCopyGrokPrompt()}
             >
               <HugeiconsIcon
