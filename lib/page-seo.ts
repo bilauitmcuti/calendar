@@ -28,9 +28,9 @@ export const CHAT_SEO_TITLE = 'Chat';
 export const CHAT_SEO_DESCRIPTION =
   'Tanya soalan kalendar akademik UiTM dengan pembantu AI. Semak tarikh cuti, pendaftaran, kuliah, dan peperiksaan.';
 
-export const MCP_SEO_TITLE = 'MCP Server';
+export const MCP_SEO_TITLE = 'MCP Server - Kalendar Akademik UiTM';
 export const MCP_SEO_DESCRIPTION =
-  'Connect Claude and other AI assistants to the Bila UiTM Cuti MCP server for UiTM academic calendar dates and Malaysia public holidays.';
+  'Connect Claude, Grok, Cursor, and other AI apps to read-only UiTM calendar and Malaysia public holiday dates. Allow access on first use.';
 
 export const INTERNSHIP_SEO_TITLE = 'Find My Internship';
 export const INTERNSHIP_SEO_DESCRIPTION =

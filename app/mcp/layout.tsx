@@ -1,17 +1,19 @@
 import type { Metadata } from 'next';
 
+const MCP_PAGE_TITLE = 'MCP Server - Kalendar Akademik UiTM';
+const MCP_PAGE_DESCRIPTION =
+  'Connect Claude, Grok, Cursor, and other AI apps to read-only UiTM calendar and Malaysia public holiday dates. Allow access on first use.';
+
 export const metadata: Metadata = {
-  title: 'MCP Server — Bila UiTM Cuti',
-  description:
-    'Connect Claude and other AI assistants to the Bila UiTM Cuti MCP server — read-only UiTM academic calendar and Malaysia public holidays.',
+  title: MCP_PAGE_TITLE,
+  description: MCP_PAGE_DESCRIPTION,
   alternates: {
     canonical: 'https://bilauitmcuti.com/mcp',
   },
   openGraph: {
     siteName: 'Bila UiTM Cuti',
-    title: 'MCP Server — Bila UiTM Cuti',
-    description:
-      'Use the Bila UiTM Cuti MCP server with Claude to ask about UiTM academic calendar dates and Malaysia public holidays.',
+    title: MCP_PAGE_TITLE,
+    description: MCP_PAGE_DESCRIPTION,
     type: 'website',
     url: 'https://bilauitmcuti.com/mcp',
     locale: 'ms_MY',
@@ -20,15 +22,14 @@ export const metadata: Metadata = {
         url: 'https://bilauitmcuti.com/og/mcp-server.png',
         width: 1200,
         height: 630,
-        alt: 'MCP Server — Bila UiTM Cuti',
+        alt: MCP_PAGE_TITLE,
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'MCP Server — Bila UiTM Cuti',
-    description:
-      'Use the Bila UiTM Cuti MCP server with Claude to ask about UiTM academic calendar dates and Malaysia public holidays.',
+    title: MCP_PAGE_TITLE,
+    description: MCP_PAGE_DESCRIPTION,
     images: ['https://bilauitmcuti.com/og/mcp-server.png'],
   },
 };
